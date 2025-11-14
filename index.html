@@ -321,13 +321,16 @@
         </div>
 
         <div class="chart-container" id="multiDayContainer" style="display: none;">
-            <div class="chart-title">Attendance by Event Day</div>
+            <div class="chart-title" id="multiDayTitle">Attendance by Event Day</div>
             <div id="multiDayChart"></div>
         </div>
     </div>
 
     <div class="table-section">
         <h2>Event Attendee Details</h2>
+        <div style="margin-bottom: 20px;">
+            <input type="text" id="searchInput" placeholder="Search by name, company, or email..." style="width: 100%; padding: 12px; font-size: 1em; border: 2px solid #c41230; border-radius: 4px;">
+        </div>
         <div id="tableContainer">
             <div class="status-message">Please upload a CSV file to view event data</div>
         </div>
@@ -622,16 +625,37 @@
             
             container.style.display = 'block';
             
+            // Get the event name for multi-day events
+            const multiDayEvents = [...new Set(data
+                .filter(row => row['Which days do you plan to attend?'])
+                .map(row => row['Event']))];
+            
+            const eventName = multiDayEvents.length === 1 ? multiDayEvents[0] : 'Multiple Events';
+            document.getElementById('multiDayTitle').textContent = `Attendance by Event Day - ${eventName}`;
+            
             // Parse multi-day attendance
             const dayCounts = {};
+            const seenDays = new Set(); // Track unique day entries
             
             data.forEach(row => {
                 const days = row['Which days do you plan to attend?'];
                 if (days) {
+                    // Normalize the day string to handle duplicates
+                    const normalizedDays = days.trim().toLowerCase();
+                    
                     // Split by common delimiters
                     const dayList = days.split(/[,;|&]+/).map(d => d.trim()).filter(d => d);
+                    
                     dayList.forEach(day => {
-                        dayCounts[day] = (dayCounts[day] || 0) + 1;
+                        const normalizedDay = day.trim();
+                        
+                        // Only count each unique day description once per person
+                        const uniqueKey = `${row['Buyer email'] || row['Email']}-${normalizedDay}`;
+                        
+                        if (!seenDays.has(uniqueKey)) {
+                            dayCounts[normalizedDay] = (dayCounts[normalizedDay] || 0) + 1;
+                            seenDays.add(uniqueKey);
+                        }
                     });
                 }
             });
@@ -700,6 +724,20 @@
 
         // Add filter listener
         document.getElementById('eventFilter').addEventListener('change', updateDashboard);
+        
+        // Add search functionality
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const table = document.querySelector('#tableContainer table');
+            
+            if (!table) return;
+            
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
     </script>
 </body>
 </html>

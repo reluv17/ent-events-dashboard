@@ -613,10 +613,17 @@
         }
 
         function updateMultiDayChart(data) {
-            // Check if "Which days do you plan to attend?" column exists
-            const hasMultiDay = data.some(row => row['Which days do you plan to attend?']);
-            
             const container = document.getElementById('multiDayContainer');
+            const eventFilter = document.getElementById('eventFilter').value;
+            
+            // Only show multi-day chart when a specific event is selected (not "All Events")
+            if (eventFilter === 'All') {
+                container.style.display = 'none';
+                return;
+            }
+            
+            // Check if this specific event has multi-day data
+            const hasMultiDay = data.some(row => row['Which days do you plan to attend?']);
             
             if (!hasMultiDay) {
                 container.style.display = 'none';
@@ -625,43 +632,23 @@
             
             container.style.display = 'block';
             
-            // Get the event name for multi-day events
-            const multiDayEvents = [...new Set(data
-                .filter(row => row['Which days do you plan to attend?'])
-                .map(row => row['Event']))];
-            
-            const eventName = multiDayEvents.length === 1 ? multiDayEvents[0] : 'Multiple Events';
+            // Get the event name
+            const eventName = eventFilter;
             document.getElementById('multiDayTitle').textContent = `Attendance by Event Day - ${eventName}`;
             
-            // Parse multi-day attendance
+            // Parse multi-day attendance - treating full response as single entry
             const dayCounts = {};
-            const seenDays = new Set(); // Track unique day entries
             
             data.forEach(row => {
                 const days = row['Which days do you plan to attend?'];
-                if (days) {
-                    // Normalize the day string to handle duplicates
-                    const normalizedDays = days.trim().toLowerCase();
-                    
-                    // Split by common delimiters
-                    const dayList = days.split(/[,;|&]+/).map(d => d.trim()).filter(d => d);
-                    
-                    dayList.forEach(day => {
-                        const normalizedDay = day.trim();
-                        
-                        // Only count each unique day description once per person
-                        const uniqueKey = `${row['Buyer email'] || row['Email']}-${normalizedDay}`;
-                        
-                        if (!seenDays.has(uniqueKey)) {
-                            dayCounts[normalizedDay] = (dayCounts[normalizedDay] || 0) + 1;
-                            seenDays.add(uniqueKey);
-                        }
-                    });
+                if (days && days.trim()) {
+                    const normalizedDays = days.trim();
+                    dayCounts[normalizedDays] = (dayCounts[normalizedDays] || 0) + 1;
                 }
             });
             
             const chartContainer = document.getElementById('multiDayChart');
-            const maxCount = Math.max(...Object.values(dayCounts));
+            const maxCount = Math.max(...Object.values(dayCounts), 1);
             
             chartContainer.innerHTML = Object.entries(dayCounts)
                 .sort((a, b) => b[1] - a[1])

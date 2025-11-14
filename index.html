@@ -38,22 +38,18 @@
         }
 
         .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .logo-n {
-            background-color: #c41230;
-            color: white;
-            font-weight: bold;
-            font-size: 2em;
-            padding: 10px 15px;
+            text-align: right;
         }
 
         .logo-text {
             font-size: 0.9em;
             color: #333;
+            line-height: 1.4;
+        }
+
+        .logo-text strong {
+            display: block;
+            font-size: 1.1em;
         }
 
         .upload-section {
@@ -248,18 +244,17 @@
             <p>Event Analytics & Attendance Tracking</p>
         </div>
         <div class="logo">
-            <div class="logo-n">N</div>
             <div class="logo-text">
-                <strong>The Roux Institute</strong><br>
+                <strong>The Roux Institute</strong>
                 Northeastern University
             </div>
         </div>
     </div>
 
     <div class="upload-section">
-        <h3><strong>Update Dashboard Data:</strong> Upload your event registration CSV file</h3>
+        <h3><strong>Update Dashboard Data:</strong> Upload your event registration CSV or Excel file</h3>
         <div class="upload-controls">
-            <input type="file" id="fileInput" accept=".csv">
+            <input type="file" id="fileInput" accept=".csv,.xlsx,.xls">
             <button id="loadButton">Load Event Data</button>
         </div>
     </div>
@@ -299,6 +294,16 @@
             <div id="companiesChart"></div>
         </div>
 
+        <div class="chart-container">
+            <div class="chart-title">Attendee Type Breakdown</div>
+            <canvas id="attendeeTypeChart" height="250"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-title">Event Comparison</div>
+            <canvas id="eventComparisonChart" height="250"></canvas>
+        </div>
+
         <div class="chart-container" id="multiDayContainer" style="display: none;">
             <div class="chart-title">Attendance by Event Day</div>
             <div id="multiDayChart"></div>
@@ -313,8 +318,12 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script>
         let rawData = [];
+        let attendeeTypeChart = null;
+        let eventComparisonChart = null;
 
         document.getElementById('loadButton').addEventListener('click', loadFile);
 
@@ -328,22 +337,39 @@
             }
 
             const reader = new FileReader();
+            const fileName = file.name.toLowerCase();
             
-            reader.onload = function(e) {
-                const data = e.target.result;
-                
-                Papa.parse(data, {
-                    header: true,
-                    skipEmptyLines: true,
-                    complete: function(results) {
-                        console.log('CSV data loaded:', results.data.length, 'rows');
-                        rawData = results.data;
-                        processData();
-                    }
-                });
-            };
-
-            reader.readAsText(file);
+            if (fileName.endsWith('.csv')) {
+                // Handle CSV files
+                reader.onload = function(e) {
+                    const data = e.target.result;
+                    
+                    Papa.parse(data, {
+                        header: true,
+                        skipEmptyLines: true,
+                        complete: function(results) {
+                            console.log('CSV data loaded:', results.data.length, 'rows');
+                            rawData = results.data;
+                            processData();
+                        }
+                    });
+                };
+                reader.readAsText(file);
+            } else if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+                // Handle Excel files
+                reader.onload = function(e) {
+                    const data = e.target.result;
+                    const workbook = XLSX.read(data, { type: 'binary' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                    console.log('Excel data loaded:', jsonData.length, 'rows');
+                    rawData = jsonData;
+                    processData();
+                };
+                reader.readAsBinaryString(file);
+            } else {
+                alert('Please upload a CSV or Excel file (.csv, .xlsx, .xls)');
+            }
         }
 
         function processData() {
@@ -411,6 +437,8 @@
             
             // Update charts
             updateCompaniesChart(filtered);
+            updateAttendeeTypeChart(filtered);
+            updateEventComparisonChart(filtered);
             updateMultiDayChart(filtered);
             
             // Update table
@@ -442,6 +470,106 @@
                     </div>
                 `;
             }).join('');
+        }
+
+        function updateAttendeeTypeChart(data) {
+            // Count attendee types
+            const northeasternCount = data.filter(row => {
+                const email = (row['Buyer email'] || '').toLowerCase();
+                const company = (row['Company'] || '').toLowerCase();
+                return email.includes('northeastern.edu') || 
+                       company.includes('northeastern') ||
+                       company.includes('roux institute');
+            }).length;
+            
+            const govtCount = data.filter(row => {
+                const company = (row['Company'] || '').toLowerCase();
+                const email = (row['Buyer email'] || '').toLowerCase();
+                return company.includes('town of') || 
+                       company.includes('city of') || 
+                       company.includes('county') ||
+                       email.includes('.gov') ||
+                       company.includes('government') ||
+                       company.includes('municipal');
+            }).length;
+            
+            const otherCount = data.length - northeasternCount - govtCount;
+            
+            const ctx = document.getElementById('attendeeTypeChart');
+            
+            if (attendeeTypeChart) {
+                attendeeTypeChart.destroy();
+            }
+            
+            attendeeTypeChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Northeastern/Roux', 'Gov\'t Institutions', 'Other Companies'],
+                    datasets: [{
+                        data: [northeasternCount, govtCount, otherCount],
+                        backgroundColor: ['#c41230', '#4a90e2', '#95a5a6']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateEventComparisonChart(data) {
+            // Count registrations per event
+            const eventCounts = {};
+            data.forEach(row => {
+                const event = row['Event'] || 'Unknown';
+                eventCounts[event] = (eventCounts[event] || 0) + 1;
+            });
+            
+            const sortedEvents = Object.entries(eventCounts)
+                .sort((a, b) => b[1] - a[1]);
+            
+            const labels = sortedEvents.map(item => item[0]);
+            const counts = sortedEvents.map(item => item[1]);
+            
+            const ctx = document.getElementById('eventComparisonChart');
+            
+            if (eventComparisonChart) {
+                eventComparisonChart.destroy();
+            }
+            
+            eventComparisonChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Registrations',
+                        data: counts,
+                        backgroundColor: '#c41230'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
         }
 
         function updateMultiDayChart(data) {

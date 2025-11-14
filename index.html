@@ -469,11 +469,14 @@
             const companyCounts = {};
             data.forEach(row => {
                 const company = (row['Company'] || '').trim();
+                const companyLower = company.toLowerCase();
                 
-                // Skip empty companies and Northeastern/Roux variations
+                // Skip empty companies, Northeastern/Roux variations, Student, and Roux
                 if (!company || 
-                    company.toLowerCase().includes('northeastern') ||
-                    company.toLowerCase().includes('roux institute')) {
+                    companyLower.includes('northeastern') ||
+                    companyLower.includes('roux institute') ||
+                    companyLower.includes('roux') ||
+                    companyLower === 'student') {
                     return;
                 }
                 

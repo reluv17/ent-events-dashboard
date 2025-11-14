@@ -113,7 +113,7 @@
 
         .metrics {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(5, 1fr);
             gap: 20px;
             margin-bottom: 30px;
             padding: 0 40px;
@@ -276,6 +276,10 @@
             <div class="metric-label">Total Registrations</div>
         </div>
         <div class="metric-card">
+            <div class="metric-value" id="totalAttendees">0</div>
+            <div class="metric-label">Total Attendees</div>
+        </div>
+        <div class="metric-card">
             <div class="metric-value" id="totalCompanies">0</div>
             <div class="metric-label">Total Companies</div>
         </div>
@@ -285,7 +289,7 @@
         </div>
         <div class="metric-card">
             <div class="metric-value" id="totalNortheastern">0</div>
-            <div class="metric-label">Northeastern</div>
+            <div class="metric-label">Northeastern/Roux</div>
         </div>
     </div>
 
@@ -372,6 +376,9 @@
             // Update metrics
             const totalReg = filtered.length;
             
+            // Count unique attendees (by email)
+            const uniqueAttendees = [...new Set(filtered.map(row => row['Buyer email']).filter(e => e))];
+            
             // Count unique companies
             const companies = [...new Set(filtered.map(row => row['Company']).filter(c => c))];
             
@@ -397,6 +404,7 @@
             }).length;
             
             document.getElementById('totalRegistrations').textContent = totalReg;
+            document.getElementById('totalAttendees').textContent = uniqueAttendees.length;
             document.getElementById('totalCompanies').textContent = companies.length;
             document.getElementById('totalGovt').textContent = govtCount;
             document.getElementById('totalNortheastern').textContent = northeasternCount;

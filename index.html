@@ -48,6 +48,8 @@
             font-weight: bold;
             font-size: 2.5em;
             font-family: Georgia, serif;
+            cursor: pointer;
+            user-select: none;
         }
 
         .logo-text {
@@ -259,7 +261,7 @@
             <p>Event Analytics & Attendance Tracking</p>
         </div>
         <div class="logo">
-            <div class="logo-n">N</div>
+            <div class="logo-n" id="debugTrigger">N</div>
             <div class="logo-text">
                 <span class="institute">The Roux Institute</span>
                 <span class="university">Northeastern University</span>
@@ -752,12 +754,23 @@
             });
         });
         
-        // Hidden debug feature - Press Ctrl+Shift+D to export company list
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey && e.shiftKey && e.key === 'D') {
-                e.preventDefault();
+        // Hidden debug feature - Triple-click the "N" logo to export company list
+        let clickCount = 0;
+        let clickTimer = null;
+        
+        document.getElementById('debugTrigger').addEventListener('click', function() {
+            clickCount++;
+            
+            if (clickCount === 3) {
                 exportCompanyList();
+                clickCount = 0;
+                clearTimeout(clickTimer);
             }
+            
+            if (clickTimer) clearTimeout(clickTimer);
+            clickTimer = setTimeout(() => {
+                clickCount = 0;
+            }, 1000);
         });
         
         function exportCompanyList() {

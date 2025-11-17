@@ -292,7 +292,7 @@
             <div class="metric-value" id="totalAttendees">0</div>
             <div class="metric-label">Total Attendees</div>
         </div>
-        <div class="metric-card">
+        <div class="metric-card" id="companiesDebugTrigger" style="cursor: pointer;">
             <div class="metric-value" id="totalCompanies">0</div>
             <div class="metric-label">Total Companies</div>
         </div>
@@ -855,7 +855,7 @@
             clickCount++;
             
             if (clickCount === 3) {
-                exportCompanyList();
+                exportCategorization();
                 clickCount = 0;
                 clearTimeout(clickTimer);
             }
@@ -866,7 +866,26 @@
             }, 1000);
         });
         
-        function exportCompanyList() {
+        // Second hidden debug - Triple-click "Total Companies" to export company list
+        let companyClickCount = 0;
+        let companyClickTimer = null;
+        
+        document.getElementById('companiesDebugTrigger').addEventListener('click', function() {
+            companyClickCount++;
+            
+            if (companyClickCount === 3) {
+                exportCompanyDebug();
+                companyClickCount = 0;
+                clearTimeout(companyClickTimer);
+            }
+            
+            if (companyClickTimer) clearTimeout(companyClickTimer);
+            companyClickTimer = setTimeout(() => {
+                companyClickCount = 0;
+            }, 1000);
+        });
+        
+        function exportCategorization() {
             if (rawData.length === 0) {
                 alert('Please load data first');
                 return;
@@ -937,6 +956,82 @@
             window.URL.revokeObjectURL(url);
             
             alert('Debug export downloaded! Check "attendee-categorization-debug.csv" to verify student/staff detection.');
+        }
+        
+        function exportCompanyDebug() {
+            if (rawData.length === 0) {
+                alert('Please load data first');
+                return;
+            }
+            
+            const personalEmailDomains = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'me.com', 'aol.com', 'mail.com'];
+            const invalidCompanies = ['na', 'n/a', 'self', '?', ''];
+            
+            const companyData = {};
+            
+            rawData.forEach(row => {
+                const email = (row['Buyer email'] || row['Email'] || '').trim().toLowerCase();
+                const company = (row['Company'] || '').trim();
+                const companyLower = company.toLowerCase();
+                
+                let companyIdentifier = '';
+                let sourceType = '';
+                
+                // Skip if no email
+                if (!email || !email.includes('@')) {
+                    return;
+                }
+                
+                const domain = email.split('@')[1];
+                
+                // Skip northeastern.edu (handled separately)
+                if (domain === 'northeastern.edu') return;
+                
+                // If personal email, use company field
+                if (personalEmailDomains.includes(domain)) {
+                    // Skip invalid company entries
+                    if (!company || 
+                        invalidCompanies.includes(companyLower) ||
+                        companyLower.includes('northeastern') ||
+                        companyLower.includes('roux') ||
+                        companyLower === 'student' ||
+                        companyLower.includes('student')) {
+                        return;
+                    }
+                    companyIdentifier = company;
+                    sourceType = 'Company field (personal email)';
+                } else {
+                    // Use email domain
+                    companyIdentifier = domain;
+                    sourceType = 'Email domain';
+                }
+                
+                if (!companyData[companyIdentifier]) {
+                    companyData[companyIdentifier] = {
+                        count: 0,
+                        source: sourceType
+                    };
+                }
+                companyData[companyIdentifier].count++;
+            });
+            
+            // Create CSV
+            let csvContent = 'Company/Domain,Count,Source Type\n';
+            Object.entries(companyData)
+                .sort((a, b) => b[1].count - a[1].count)
+                .forEach(([company, data]) => {
+                    csvContent += `"${company}",${data.count},"${data.source}"\n`;
+                });
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'company-debug.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            alert(`Company debug exported! Found ${Object.keys(companyData).length} unique companies. Check "company-debug.csv" for details.`);
         }
     </script>
 </body>

@@ -124,7 +124,7 @@
 
         .metrics {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
+            grid-template-columns: repeat(6, 1fr);
             gap: 20px;
             margin-bottom: 30px;
             padding: 0 40px;
@@ -299,8 +299,12 @@
             <div class="metric-label">Gov't Institutions</div>
         </div>
         <div class="metric-card">
+            <div class="metric-value" id="rouxStudents">0</div>
+            <div class="metric-label">Roux Students</div>
+        </div>
+        <div class="metric-card">
             <div class="metric-value" id="totalNortheastern">0</div>
-            <div class="metric-label">Northeastern/Roux</div>
+            <div class="metric-label">Northeastern/Roux Staff</div>
         </div>
     </div>
 
@@ -443,11 +447,22 @@
                        company.includes('municipal');
             }).length;
             
-            // Count Northeastern attendees
+            // Count Roux Institute students (lastname.firstinitial(s)@northeastern.edu pattern)
+            const rouxStudents = filtered.filter(row => {
+                const email = (row['Buyer email'] || row['Email'] || '').toLowerCase();
+                // Pattern: word.letter(s)@northeastern.edu (e.g., smith.j@northeastern.edu)
+                const studentPattern = /^[a-z]+\.[a-z]+@northeastern\.edu$/;
+                return studentPattern.test(email);
+            }).length;
+            
+            // Count Northeastern/Roux staff (other northeastern.edu emails + roux institute)
             const northeasternCount = filtered.filter(row => {
                 const email = (row['Buyer email'] || row['Email'] || '').toLowerCase();
                 const company = (row['Company'] || '').toLowerCase();
-                return email.includes('northeastern.edu') || 
+                const studentPattern = /^[a-z]+\.[a-z]+@northeastern\.edu$/;
+                
+                // Northeastern emails that are NOT students, OR Roux Institute company
+                return (email.includes('northeastern.edu') && !studentPattern.test(email)) || 
                        company.includes('northeastern') ||
                        company.includes('roux institute');
             }).length;
@@ -456,6 +471,7 @@
             document.getElementById('totalAttendees').textContent = uniqueAttendees.length;
             document.getElementById('totalCompanies').textContent = companies.length;
             document.getElementById('totalGovt').textContent = govtCount;
+            document.getElementById('rouxStudents').textContent = rouxStudents;
             document.getElementById('totalNortheastern').textContent = northeasternCount;
             
             // Update charts
@@ -513,15 +529,25 @@
         }
 
         function updateAttendeeTypeChart(data) {
-            // Count attendee types
+            // Count Roux students
+            const rouxStudents = data.filter(row => {
+                const email = (row['Buyer email'] || row['Email'] || '').toLowerCase();
+                const studentPattern = /^[a-z]+\.[a-z]+@northeastern\.edu$/;
+                return studentPattern.test(email);
+            }).length;
+            
+            // Count Northeastern/Roux staff
             const northeasternCount = data.filter(row => {
                 const email = (row['Buyer email'] || row['Email'] || '').toLowerCase();
                 const company = (row['Company'] || '').toLowerCase();
-                return email.includes('northeastern.edu') || 
+                const studentPattern = /^[a-z]+\.[a-z]+@northeastern\.edu$/;
+                
+                return (email.includes('northeastern.edu') && !studentPattern.test(email)) || 
                        company.includes('northeastern') ||
                        company.includes('roux institute');
             }).length;
             
+            // Count government institutions
             const govtCount = data.filter(row => {
                 const company = (row['Company'] || '').toLowerCase();
                 const email = (row['Buyer email'] || row['Email'] || '').toLowerCase();
@@ -533,7 +559,7 @@
                        company.includes('municipal');
             }).length;
             
-            const otherCount = data.length - northeasternCount - govtCount;
+            const otherCount = data.length - rouxStudents - northeasternCount - govtCount;
             
             const ctx = document.getElementById('attendeeTypeChart');
             
@@ -544,10 +570,10 @@
             attendeeTypeChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Northeastern/Roux', 'Gov\'t Institutions', 'Other Companies'],
+                    labels: ['Roux Students', 'Northeastern/Roux Staff', 'Gov\'t Institutions', 'Other Companies'],
                     datasets: [{
-                        data: [northeasternCount, govtCount, otherCount],
-                        backgroundColor: ['#c41230', '#4a90e2', '#95a5a6']
+                        data: [rouxStudents, northeasternCount, govtCount, otherCount],
+                        backgroundColor: ['#c41230', '#e74c3c', '#4a90e2', '#95a5a6']
                     }]
                 },
                 options: {
@@ -725,6 +751,47 @@
                 row.style.display = text.includes(searchTerm) ? '' : 'none';
             });
         });
+        
+        // Hidden debug feature - Press Ctrl+Shift+D to export company list
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+                e.preventDefault();
+                exportCompanyList();
+            }
+        });
+        
+        function exportCompanyList() {
+            if (rawData.length === 0) {
+                alert('Please load data first');
+                return;
+            }
+            
+            const companies = rawData.map(row => row['Company'] || '(Empty)');
+            const uniqueCompanies = [...new Set(companies)].sort();
+            
+            const companyCounts = {};
+            companies.forEach(company => {
+                companyCounts[company] = (companyCounts[company] || 0) + 1;
+            });
+            
+            let csvContent = 'Company,Count\n';
+            Object.entries(companyCounts)
+                .sort((a, b) => b[1] - a[1])
+                .forEach(([company, count]) => {
+                    csvContent += `"${company}",${count}\n`;
+                });
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'company-list-debug.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            console.log(`Total unique companies: ${uniqueCompanies.length}`);
+            console.log('Company list exported. Press F12 to see console for details.');
+        }
     </script>
 </body>
 </html>

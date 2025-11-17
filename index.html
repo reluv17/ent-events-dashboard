@@ -492,8 +492,9 @@
                 const email = (row['Buyer email'] || row['Email'] || '').toLowerCase();
                 const company = (row['Company'] || '').toLowerCase();
                 
-                // Primary: Email pattern lastname.firstinitial(s)@northeastern.edu
-                const studentPattern = /^[a-z]+\.[a-z]+@northeastern\.edu$/;
+                // Student pattern: lastname.initial(s)@northeastern.edu (longer.shorter)
+                // Examples: smith.j@, smith.jo@, ayiteyadjin.a@
+                const studentPattern = /^[a-z]{3,}\.[a-z]{1,3}@northeastern\.edu$/;
                 if (studentPattern.test(email)) {
                     return true;
                 }
@@ -519,13 +520,18 @@
                 return false;
             }).length;
             
-            // Count Northeastern/Roux staff (northeastern.edu emails only, NOT personal emails)
+            // Count Northeastern/Roux staff (staff email pattern OR other northeastern.edu)
             const northeasternCount = filtered.filter(row => {
                 const email = (row['Buyer email'] || row['Email'] || '').toLowerCase();
-                const studentPattern = /^[a-z]+\.[a-z]+@northeastern\.edu$/;
                 
-                // Only count northeastern.edu emails that are NOT students
-                return email.includes('northeastern.edu') && !studentPattern.test(email);
+                // Staff pattern: initial(s).lastname@northeastern.edu (shorter.longer)
+                // Examples: j.smith@, jo.smith@, c.torina@
+                const staffPattern = /^[a-z]{1,3}\.[a-z]{3,}@northeastern\.edu$/;
+                const studentPattern = /^[a-z]{3,}\.[a-z]{1,3}@northeastern\.edu$/;
+                
+                // Northeastern.edu emails that match staff pattern OR don't match student pattern
+                return email.includes('northeastern.edu') && 
+                       (staffPattern.test(email) || !studentPattern.test(email));
             }).length;
             
             document.getElementById('totalRegistrations').textContent = totalReg;
@@ -598,8 +604,8 @@
                 const email = (row['Buyer email'] || row['Email'] || '').toLowerCase();
                 const company = (row['Company'] || '').toLowerCase();
                 
-                // Email pattern
-                const studentPattern = /^[a-z]+\.[a-z]+@northeastern\.edu$/;
+                // Student pattern: lastname.initial(s)@ (longer.shorter)
+                const studentPattern = /^[a-z]{3,}\.[a-z]{1,3}@northeastern\.edu$/;
                 if (studentPattern.test(email)) {
                     return true;
                 }
@@ -624,12 +630,16 @@
                 return false;
             }).length;
             
-            // Count Northeastern/Roux staff (northeastern.edu emails only)
+            // Count Northeastern/Roux staff (staff email pattern)
             const northeasternStaff = data.filter(row => {
                 const email = (row['Buyer email'] || row['Email'] || '').toLowerCase();
-                const studentPattern = /^[a-z]+\.[a-z]+@northeastern\.edu$/;
                 
-                return email.includes('northeastern.edu') && !studentPattern.test(email);
+                // Staff pattern: initial(s).lastname@ (shorter.longer)
+                const staffPattern = /^[a-z]{1,3}\.[a-z]{3,}@northeastern\.edu$/;
+                const studentPattern = /^[a-z]{3,}\.[a-z]{1,3}@northeastern\.edu$/;
+                
+                return email.includes('northeastern.edu') && 
+                       (staffPattern.test(email) || !studentPattern.test(email));
             }).length;
             
             // Count government institutions
@@ -871,7 +881,11 @@
                 const name = `${row['First name'] || ''} ${row['Last name'] || ''}`.trim();
                 const email = (row['Buyer email'] || row['Email'] || '').toLowerCase();
                 const company = (row['Company'] || '').trim();
-                const studentPattern = /^[a-z]+\.[a-z]+@northeastern\.edu$/;
+                
+                // Student pattern: lastname.initial(s)@ (3+ letters . 1-3 letters)
+                const studentPattern = /^[a-z]{3,}\.[a-z]{1,3}@northeastern\.edu$/;
+                // Staff pattern: initial(s).lastname@ (1-3 letters . 3+ letters)
+                const staffPattern = /^[a-z]{1,3}\.[a-z]{3,}@northeastern\.edu$/;
                 
                 let category = 'Other';
                 let method = '';
@@ -879,7 +893,10 @@
                 // Check if Roux Student
                 if (studentPattern.test(email)) {
                     category = 'Roux Student';
-                    method = 'Student email pattern';
+                    method = 'Student email pattern (lastname.initial@)';
+                } else if (staffPattern.test(email)) {
+                    category = 'Northeastern/Roux Staff';
+                    method = 'Staff email pattern (initial.lastname@)';
                 } else {
                     const domain = email.includes('@') ? email.split('@')[1] : '';
                     const isPersonalEmail = personalEmailDomains.includes(domain);
@@ -899,7 +916,7 @@
                         method = 'Personal email + Northeastern/Roux company';
                     } else if (email.includes('northeastern.edu')) {
                         category = 'Northeastern/Roux Staff';
-                        method = 'Northeastern.edu email (non-student)';
+                        method = 'Northeastern.edu email (other pattern)';
                     } else if (companyLower.includes('town of') || 
                                companyLower.includes('city of') || 
                                email.includes('.gov')) {

@@ -434,8 +434,44 @@
             }).filter(e => e);
             const uniqueAttendees = [...new Set(emails)];
             
-            // Count unique companies
-            const companies = [...new Set(filtered.map(row => row['Company']).filter(c => c))];
+            // Count unique companies - hybrid approach using email domain AND company field
+            const personalEmailDomains = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'me.com', 'aol.com', 'mail.com'];
+            
+            const companyIdentifiers = filtered
+                .map(row => {
+                    const email = (row['Buyer email'] || row['Email'] || '').trim().toLowerCase();
+                    const company = (row['Company'] || '').trim();
+                    
+                    if (!email || !email.includes('@')) {
+                        // No email, use company field if available
+                        return company || null;
+                    }
+                    
+                    const domain = email.split('@')[1];
+                    
+                    // Skip northeastern.edu as those are captured separately
+                    if (domain === 'northeastern.edu') return null;
+                    
+                    // If personal email domain, use Company field instead
+                    if (personalEmailDomains.includes(domain)) {
+                        // Skip if company is Northeastern/Roux/Student
+                        const companyLower = company.toLowerCase();
+                        if (!company || 
+                            companyLower.includes('northeastern') ||
+                            companyLower.includes('roux') ||
+                            companyLower === 'student' ||
+                            companyLower.includes('student')) {
+                            return null;
+                        }
+                        return company;
+                    }
+                    
+                    // Otherwise use email domain as company identifier
+                    return domain;
+                })
+                .filter(c => c);
+            
+            const uniqueCompanies = [...new Set(companyIdentifiers)];
             
             // Count government institutions
             const govtCount = filtered.filter(row => {
@@ -449,29 +485,52 @@
                        company.includes('municipal');
             }).length;
             
-            // Count Roux Institute students (lastname.firstinitial(s)@northeastern.edu pattern)
+            // Count Roux Institute students (email pattern OR company field indicates student)
+            const personalEmailDomains2 = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'me.com', 'aol.com', 'mail.com'];
+            
             const rouxStudents = filtered.filter(row => {
                 const email = (row['Buyer email'] || row['Email'] || '').toLowerCase();
-                // Pattern: word.letter(s)@northeastern.edu (e.g., smith.j@northeastern.edu)
+                const company = (row['Company'] || '').toLowerCase();
+                
+                // Primary: Email pattern lastname.firstinitial(s)@northeastern.edu
                 const studentPattern = /^[a-z]+\.[a-z]+@northeastern\.edu$/;
-                return studentPattern.test(email);
+                if (studentPattern.test(email)) {
+                    return true;
+                }
+                
+                // Check if using personal email
+                const domain = email.includes('@') ? email.split('@')[1] : '';
+                const isPersonalEmail = personalEmailDomains2.includes(domain);
+                
+                // If personal email AND company indicates Northeastern/Roux, assume student
+                if (isPersonalEmail && (
+                    company === 'student' || 
+                    company === 'roux student' || 
+                    company === 'roux institute student' ||
+                    company.includes('student') ||
+                    company.includes('northeastern') ||
+                    company.includes('roux institute') ||
+                    company === 'nu' ||
+                    company === 'roux'
+                )) {
+                    return true;
+                }
+                
+                return false;
             }).length;
             
-            // Count Northeastern/Roux staff (other northeastern.edu emails + roux institute)
+            // Count Northeastern/Roux staff (northeastern.edu emails only, NOT personal emails)
             const northeasternCount = filtered.filter(row => {
                 const email = (row['Buyer email'] || row['Email'] || '').toLowerCase();
-                const company = (row['Company'] || '').toLowerCase();
                 const studentPattern = /^[a-z]+\.[a-z]+@northeastern\.edu$/;
                 
-                // Northeastern emails that are NOT students, OR Roux Institute company
-                return (email.includes('northeastern.edu') && !studentPattern.test(email)) || 
-                       company.includes('northeastern') ||
-                       company.includes('roux institute');
+                // Only count northeastern.edu emails that are NOT students
+                return email.includes('northeastern.edu') && !studentPattern.test(email);
             }).length;
             
             document.getElementById('totalRegistrations').textContent = totalReg;
             document.getElementById('totalAttendees').textContent = uniqueAttendees.length;
-            document.getElementById('totalCompanies').textContent = companies.length;
+            document.getElementById('totalCompanies').textContent = uniqueCompanies.length;
             document.getElementById('totalGovt').textContent = govtCount;
             document.getElementById('rouxStudents').textContent = rouxStudents;
             document.getElementById('totalNortheastern').textContent = northeasternCount;
@@ -497,7 +556,8 @@
                     companyLower.includes('northeastern') ||
                     companyLower.includes('roux institute') ||
                     companyLower.includes('roux') ||
-                    companyLower === 'student') {
+                    companyLower === 'student' ||
+                    companyLower.includes('student')) {
                     return;
                 }
                 
@@ -531,22 +591,45 @@
         }
 
         function updateAttendeeTypeChart(data) {
-            // Count Roux students
-            const rouxStudents = data.filter(row => {
-                const email = (row['Buyer email'] || row['Email'] || '').toLowerCase();
-                const studentPattern = /^[a-z]+\.[a-z]+@northeastern\.edu$/;
-                return studentPattern.test(email);
-            }).length;
+            // Count Roux students (for donut chart)
+            const personalEmailDomainsChart = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'me.com', 'aol.com', 'mail.com'];
             
-            // Count Northeastern/Roux staff
-            const northeasternCount = data.filter(row => {
+            const rouxStudentsChart = data.filter(row => {
                 const email = (row['Buyer email'] || row['Email'] || '').toLowerCase();
                 const company = (row['Company'] || '').toLowerCase();
+                
+                // Email pattern
+                const studentPattern = /^[a-z]+\.[a-z]+@northeastern\.edu$/;
+                if (studentPattern.test(email)) {
+                    return true;
+                }
+                
+                // Personal email with Northeastern/Roux company
+                const domain = email.includes('@') ? email.split('@')[1] : '';
+                const isPersonalEmail = personalEmailDomainsChart.includes(domain);
+                
+                if (isPersonalEmail && (
+                    company === 'student' || 
+                    company === 'roux student' || 
+                    company === 'roux institute student' ||
+                    company.includes('student') ||
+                    company.includes('northeastern') ||
+                    company.includes('roux institute') ||
+                    company === 'nu' ||
+                    company === 'roux'
+                )) {
+                    return true;
+                }
+                
+                return false;
+            }).length;
+            
+            // Count Northeastern/Roux staff (northeastern.edu emails only)
+            const northeasternStaff = data.filter(row => {
+                const email = (row['Buyer email'] || row['Email'] || '').toLowerCase();
                 const studentPattern = /^[a-z]+\.[a-z]+@northeastern\.edu$/;
                 
-                return (email.includes('northeastern.edu') && !studentPattern.test(email)) || 
-                       company.includes('northeastern') ||
-                       company.includes('roux institute');
+                return email.includes('northeastern.edu') && !studentPattern.test(email);
             }).length;
             
             // Count government institutions
@@ -561,7 +644,7 @@
                        company.includes('municipal');
             }).length;
             
-            const otherCount = data.length - rouxStudents - northeasternCount - govtCount;
+            const otherCount = data.length - rouxStudentsChart - northeasternStaff - govtCount;
             
             const ctx = document.getElementById('attendeeTypeChart');
             
@@ -574,7 +657,7 @@
                 data: {
                     labels: ['Roux Students', 'Northeastern/Roux Staff', 'Gov\'t Institutions', 'Other Companies'],
                     datasets: [{
-                        data: [rouxStudents, northeasternCount, govtCount, otherCount],
+                        data: [rouxStudentsChart, northeasternStaff, govtCount, otherCount],
                         backgroundColor: ['#c41230', '#f59e0b', '#4a90e2', '#95a5a6']
                     }]
                 },
@@ -754,7 +837,7 @@
             });
         });
         
-        // Hidden debug feature - Triple-click the "N" logo to export company list
+        // Hidden debug feature - Triple-click the "N" logo to export categorization
         let clickCount = 0;
         let clickTimer = null;
         
@@ -779,31 +862,64 @@
                 return;
             }
             
-            const companies = rawData.map(row => row['Company'] || '(Empty)');
-            const uniqueCompanies = [...new Set(companies)].sort();
+            const personalEmailDomains = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'me.com', 'aol.com', 'mail.com'];
             
-            const companyCounts = {};
-            companies.forEach(company => {
-                companyCounts[company] = (companyCounts[company] || 0) + 1;
+            // Categorize each person
+            let csvContent = 'Name,Email,Company,Category,Detection Method\n';
+            
+            rawData.forEach(row => {
+                const name = `${row['First name'] || ''} ${row['Last name'] || ''}`.trim();
+                const email = (row['Buyer email'] || row['Email'] || '').toLowerCase();
+                const company = (row['Company'] || '').trim();
+                const studentPattern = /^[a-z]+\.[a-z]+@northeastern\.edu$/;
+                
+                let category = 'Other';
+                let method = '';
+                
+                // Check if Roux Student
+                if (studentPattern.test(email)) {
+                    category = 'Roux Student';
+                    method = 'Student email pattern';
+                } else {
+                    const domain = email.includes('@') ? email.split('@')[1] : '';
+                    const isPersonalEmail = personalEmailDomains.includes(domain);
+                    const companyLower = company.toLowerCase();
+                    
+                    if (isPersonalEmail && (
+                        companyLower === 'student' || 
+                        companyLower === 'roux student' || 
+                        companyLower === 'roux institute student' ||
+                        companyLower.includes('student') ||
+                        companyLower.includes('northeastern') ||
+                        companyLower.includes('roux institute') ||
+                        companyLower === 'nu' ||
+                        companyLower === 'roux'
+                    )) {
+                        category = 'Roux Student';
+                        method = 'Personal email + Northeastern/Roux company';
+                    } else if (email.includes('northeastern.edu')) {
+                        category = 'Northeastern/Roux Staff';
+                        method = 'Northeastern.edu email (non-student)';
+                    } else if (companyLower.includes('town of') || 
+                               companyLower.includes('city of') || 
+                               email.includes('.gov')) {
+                        category = 'Government';
+                        method = 'Gov domain or company';
+                    }
+                }
+                
+                csvContent += `"${name}","${email}","${company}","${category}","${method}"\n`;
             });
-            
-            let csvContent = 'Company,Count\n';
-            Object.entries(companyCounts)
-                .sort((a, b) => b[1] - a[1])
-                .forEach(([company, count]) => {
-                    csvContent += `"${company}",${count}\n`;
-                });
             
             const blob = new Blob([csvContent], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'company-list-debug.csv';
+            a.download = 'attendee-categorization-debug.csv';
             a.click();
             window.URL.revokeObjectURL(url);
             
-            console.log(`Total unique companies: ${uniqueCompanies.length}`);
-            console.log('Company list exported. Press F12 to see console for details.');
+            alert('Debug export downloaded! Check "attendee-categorization-debug.csv" to verify student/staff detection.');
         }
     </script>
 </body>

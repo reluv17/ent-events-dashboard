@@ -294,7 +294,7 @@
         </div>
         <div class="metric-card" id="companiesDebugTrigger" style="cursor: pointer;">
             <div class="metric-value" id="totalCompanies">0</div>
-            <div class="metric-label">Total Companies</div>
+            <div class="metric-label">Unique Companies</div>
         </div>
         <div class="metric-card">
             <div class="metric-value" id="totalGovt">0</div>
@@ -436,39 +436,51 @@
             
             // Count unique companies - hybrid approach using email domain AND company field
             const personalEmailDomains = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'me.com', 'aol.com', 'mail.com'];
+            const excludedCompanies = ['retired', 'independent', 'na', 'n/a', 'self', '?', 'none', 'student'];
             
             const companyIdentifiers = filtered
                 .map(row => {
                     const email = (row['Buyer email'] || row['Email'] || '').trim().toLowerCase();
                     const company = (row['Company'] || '').trim();
+                    const companyLower = company.toLowerCase();
                     
                     if (!email || !email.includes('@')) {
-                        return company ? company.toLowerCase() : null;
-                    }
-                    
-                    const domain = email.split('@')[1];
-                    
-                    if (domain === 'northeastern.edu') return null;
-                    
-                    if (personalEmailDomains.includes(domain)) {
-                        const companyLower = company.toLowerCase();
+                        // If no email, only use company if it's valid
                         if (!company || 
+                            excludedCompanies.includes(companyLower) ||
                             companyLower.includes('northeastern') ||
                             companyLower.includes('roux') ||
-                            companyLower === 'student' ||
                             companyLower.includes('student')) {
                             return null;
                         }
                         return companyLower;
                     }
                     
+                    const domain = email.split('@')[1];
+                    
+                    // Skip northeastern.edu emails
+                    if (domain === 'northeastern.edu') return null;
+                    
+                    // For personal emails, use company field
+                    if (personalEmailDomains.includes(domain)) {
+                        if (!company || 
+                            excludedCompanies.includes(companyLower) ||
+                            companyLower.includes('northeastern') ||
+                            companyLower.includes('roux') ||
+                            companyLower.includes('student')) {
+                            return null;
+                        }
+                        return companyLower;
+                    }
+                    
+                    // Use email domain as company identifier
                     return domain;
                 })
                 .filter(c => c);
             
             const uniqueCompanies = [...new Set(companyIdentifiers)];
             
-            // Total Companies = count of unique companies (not total registrations)
+            // Unique Companies = count of unique companies (not total registrations)
             const totalCompaniesCount = uniqueCompanies.length;
             
             // Count government institutions
@@ -963,73 +975,86 @@
             }
             
             const personalEmailDomains = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'me.com', 'aol.com', 'mail.com'];
-            const invalidCompanies = ['na', 'n/a', 'self', '?', ''];
+            const excludedCompanies = ['retired', 'independent', 'na', 'n/a', 'self', '?', 'none', 'student'];
             
-            const companyData = {};
+            // Track unique companies and how many people from each
+            const companyPeople = {};
             
             rawData.forEach(row => {
                 const email = (row['Buyer email'] || row['Email'] || '').trim().toLowerCase();
                 const company = (row['Company'] || '').trim();
                 const companyLower = company.toLowerCase();
+                const name = `${row['First name'] || ''} ${row['Last name'] || ''}`.trim();
                 
-                let companyIdentifier = '';
+                let companyIdentifier = null;
                 let sourceType = '';
                 
-                // Skip if no email
+                // Handle rows without email
                 if (!email || !email.includes('@')) {
-                    return;
-                }
-                
-                const domain = email.split('@')[1];
-                
-                // Skip northeastern.edu (handled separately)
-                if (domain === 'northeastern.edu') return;
-                
-                // If personal email, use company field
-                if (personalEmailDomains.includes(domain)) {
-                    // Skip invalid company entries
-                    if (!company || 
-                        invalidCompanies.includes(companyLower) ||
-                        companyLower.includes('northeastern') ||
-                        companyLower.includes('roux') ||
-                        companyLower === 'student' ||
-                        companyLower.includes('student')) {
-                        return;
+                    if (company && 
+                        !excludedCompanies.includes(companyLower) &&
+                        !companyLower.includes('northeastern') &&
+                        !companyLower.includes('roux') &&
+                        !companyLower.includes('student')) {
+                        companyIdentifier = company;
+                        sourceType = 'Company field (no email)';
                     }
-                    companyIdentifier = company;
-                    sourceType = 'Company field (personal email)';
                 } else {
-                    // Use email domain
-                    companyIdentifier = domain;
-                    sourceType = 'Email domain';
+                    const domain = email.split('@')[1];
+                    
+                    // Skip northeastern.edu
+                    if (domain === 'northeastern.edu') return;
+                    
+                    // For personal emails, use company field
+                    if (personalEmailDomains.includes(domain)) {
+                        if (company && 
+                            !excludedCompanies.includes(companyLower) &&
+                            !companyLower.includes('northeastern') &&
+                            !companyLower.includes('roux') &&
+                            !companyLower.includes('student')) {
+                            companyIdentifier = company;
+                            sourceType = 'Company field (personal email)';
+                        }
+                    } else {
+                        // Use email domain
+                        companyIdentifier = domain;
+                        sourceType = 'Email domain';
+                    }
                 }
                 
-                if (!companyData[companyIdentifier]) {
-                    companyData[companyIdentifier] = {
-                        count: 0,
-                        source: sourceType
-                    };
+                if (companyIdentifier) {
+                    if (!companyPeople[companyIdentifier]) {
+                        companyPeople[companyIdentifier] = {
+                            source: sourceType,
+                            people: []
+                        };
+                    }
+                    companyPeople[companyIdentifier].people.push({
+                        name: name || 'N/A',
+                        email: email || 'N/A'
+                    });
                 }
-                companyData[companyIdentifier].count++;
             });
             
-            // Create CSV
-            let csvContent = 'Company/Domain,Count,Source Type\n';
-            Object.entries(companyData)
-                .sort((a, b) => b[1].count - a[1].count)
+            // Create CSV showing each unique company was counted once
+            let csvContent = 'Company/Domain,People Count,Source Type,Sample Person(s)\n';
+            
+            Object.entries(companyPeople)
+                .sort((a, b) => b[1].people.length - a[1].people.length)
                 .forEach(([company, data]) => {
-                    csvContent += `"${company}",${data.count},"${data.source}"\n`;
+                    const samplePeople = data.people.slice(0, 3).map(p => `${p.name} (${p.email})`).join('; ');
+                    csvContent += `"${company}",${data.people.length},"${data.source}","${samplePeople}"\n`;
                 });
             
             const blob = new Blob([csvContent], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'company-debug.csv';
+            a.download = 'unique-companies-debug.csv';
             a.click();
             window.URL.revokeObjectURL(url);
             
-            alert(`Company debug exported! Found ${Object.keys(companyData).length} unique companies. Check "company-debug.csv" for details.`);
+            alert(`Unique companies debug exported!\n\nTotal unique companies: ${Object.keys(companyPeople).length}\n\nEach row represents ONE unique company.\nPeople Count shows how many people from that company registered.\n\nCheck "unique-companies-debug.csv" for details.`);
         }
     </script>
 </body>

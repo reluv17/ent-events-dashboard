@@ -443,18 +443,14 @@
                     const company = (row['Company'] || '').trim();
                     
                     if (!email || !email.includes('@')) {
-                        // No email, use company field if available
-                        return company || null;
+                        return company ? company.toLowerCase() : null;
                     }
                     
                     const domain = email.split('@')[1];
                     
-                    // Skip northeastern.edu as those are captured separately
                     if (domain === 'northeastern.edu') return null;
                     
-                    // If personal email domain, use Company field instead
                     if (personalEmailDomains.includes(domain)) {
-                        // Skip if company is Northeastern/Roux/Student
                         const companyLower = company.toLowerCase();
                         if (!company || 
                             companyLower.includes('northeastern') ||
@@ -463,15 +459,17 @@
                             companyLower.includes('student')) {
                             return null;
                         }
-                        return company;
+                        return companyLower;
                     }
                     
-                    // Otherwise use email domain as company identifier
                     return domain;
                 })
                 .filter(c => c);
             
             const uniqueCompanies = [...new Set(companyIdentifiers)];
+            
+            // Total Companies = count of unique companies (not total registrations)
+            const totalCompaniesCount = uniqueCompanies.length;
             
             // Count government institutions
             const govtCount = filtered.filter(row => {
@@ -536,7 +534,7 @@
             
             document.getElementById('totalRegistrations').textContent = totalReg;
             document.getElementById('totalAttendees').textContent = uniqueAttendees.length;
-            document.getElementById('totalCompanies').textContent = uniqueCompanies.length;
+            document.getElementById('totalCompanies').textContent = totalCompaniesCount;
             document.getElementById('totalGovt').textContent = govtCount;
             document.getElementById('rouxStudents').textContent = rouxStudents;
             document.getElementById('totalNortheastern').textContent = northeasternCount;

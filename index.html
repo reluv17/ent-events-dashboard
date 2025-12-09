@@ -75,12 +75,12 @@
             justify-content: center;
             gap: 15px;
             align-items: center;
+            flex-wrap: wrap;
         }
         #fileInput {
             padding: 10px;
         }
-        #loadButton {
-            background-color: #c41230;
+        #loadButton, #clearButton {
             color: white;
             border: none;
             padding: 12px 30px;
@@ -89,8 +89,17 @@
             border-radius: 4px;
             font-weight: bold;
         }
+        #loadButton {
+            background-color: #c41230;
+        }
         #loadButton:hover {
             background-color: #a00f28;
+        }
+        #clearButton {
+            background-color: #dc3545;
+        }
+        #clearButton:hover {
+            background-color: #c82333;
         }
         .data-status {
             text-align: center;
@@ -246,15 +255,16 @@
     </div>
     <div class="upload-section">
         <h3><strong>Update Dashboard Data:</strong> Upload your event registration CSV or Excel file</h3>
-        <p style="color: #666; font-size: 0.9em; margin-top: 10px;">💡 <strong>Tip:</strong> Keep this tab open to maintain your data. Refreshing the page will clear all loaded data.</p>
+        <p style="color: #666; font-size: 0.9em; margin-top: 10px;">💾 <strong>Auto-Save Enabled:</strong> Your data will be saved and persist even after refreshing the page.</p>
         <div class="upload-controls">
             <input type="file" id="fileInput" accept=".csv,.xlsx,.xls">
             <button id="loadButton">Load Event Data</button>
+            <button id="clearButton">Clear Saved Data</button>
         </div>
     </div>
 
     <div id="dataStatus" class="data-status">
-        <strong>✓ Data Loaded Successfully!</strong> Dashboard is active. Note: Refreshing this page will clear all data.
+        <strong>✓ Data Loaded Successfully!</strong> Dashboard is active and data is saved to your browser.
     </div>
 
     <div class="filters">
@@ -322,7 +332,43 @@
         let rawData = [];
         let attendeeTypeChart = null;
         let eventComparisonChart = null;
+
+        // Load data from localStorage on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            const savedData = localStorage.getItem('rouxEventsData');
+            if (savedData) {
+                try {
+                    rawData = JSON.parse(savedData);
+                    console.log('Loaded saved data:', rawData.length, 'rows');
+                    processData();
+                } catch (e) {
+                    console.error('Error loading saved data:', e);
+                }
+            }
+        });
+
         document.getElementById('loadButton').addEventListener('click', loadFile);
+        
+        document.getElementById('clearButton').addEventListener('click', function() {
+            if (confirm('Are you sure you want to clear all saved data? This cannot be undone.')) {
+                localStorage.removeItem('rouxEventsData');
+                rawData = [];
+                document.getElementById('dataStatus').style.display = 'none';
+                document.getElementById('totalRegistrations').textContent = '0';
+                document.getElementById('totalAttendees').textContent = '0';
+                document.getElementById('totalCompanies').textContent = '0';
+                document.getElementById('totalGovt').textContent = '0';
+                document.getElementById('rouxStudents').textContent = '0';
+                document.getElementById('totalNortheastern').textContent = '0';
+                document.getElementById('tableContainer').innerHTML = '<div class="status-message">Please upload a CSV file to view event data</div>';
+                document.getElementById('companiesChart').innerHTML = '';
+                if (attendeeTypeChart) attendeeTypeChart.destroy();
+                if (eventComparisonChart) eventComparisonChart.destroy();
+                document.getElementById('eventFilter').innerHTML = '<option value="All">All Events</option>';
+                alert('All data cleared successfully!');
+            }
+        });
+
         function loadFile() {
             const fileInput = document.getElementById('fileInput');
             const file = fileInput.files[0];
@@ -344,6 +390,7 @@
                         complete: function(results) {
                             console.log('CSV data loaded:', results.data.length, 'rows');
                             rawData = results.data;
+                            saveData();
                             processData();
                         }
                     });
@@ -357,6 +404,7 @@
                     const jsonData = XLSX.utils.sheet_to_json(firstSheet);
                     console.log('Excel data loaded:', jsonData.length, 'rows');
                     rawData = jsonData;
+                    saveData();
                     processData();
                 };
                 reader.readAsBinaryString(file);
@@ -364,12 +412,23 @@
                 alert('Please upload a CSV or Excel file (.csv, .xlsx, .xls)');
             }
         }
+
+        function saveData() {
+            try {
+                localStorage.setItem('rouxEventsData', JSON.stringify(rawData));
+                console.log('Data saved to localStorage');
+            } catch (e) {
+                console.error('Error saving data:', e);
+                alert('Warning: Data is too large to save automatically. It will be cleared on refresh.');
+            }
+        }
+
         function processData() {
             populateFilters();
             updateDashboard();
-            // Show data loaded indicator
             document.getElementById('dataStatus').style.display = 'block';
         }
+
         function populateFilters() {
             const eventFilter = document.getElementById('eventFilter');
             const events = [...new Set(rawData.map(row => row['Event']).filter(e => e))];
@@ -382,6 +441,7 @@
                 eventFilter.appendChild(option);
             });
         }
+
         function updateDashboard() {
             const eventFilter = document.getElementById('eventFilter').value;
             
@@ -535,6 +595,7 @@
             updateMultiDayChart(filtered);
             renderTable(filtered);
         }
+
         function updateCompaniesChart(data) {
             const companyCounts = {};
             data.forEach(row => {
@@ -578,6 +639,7 @@
                 `;
             }).join('');
         }
+
         function updateAttendeeTypeChart(data) {
             const personalEmailDomainsChart = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'me.com', 'aol.com', 'mail.com'];
             
@@ -658,6 +720,7 @@
                 }
             });
         }
+
         function updateEventComparisonChart(data) {
             const eventCounts = {};
             data.forEach(row => {
@@ -706,6 +769,7 @@
                 }
             });
         }
+
         function updateMultiDayChart(data) {
             const container = document.getElementById('multiDayContainer');
             const eventFilter = document.getElementById('eventFilter').value;
@@ -754,6 +818,7 @@
                     `;
                 }).join('');
         }
+
         function renderTable(data) {
             const container = document.getElementById('tableContainer');
             
@@ -797,6 +862,7 @@
             html += '</tbody></table>';
             container.innerHTML = html;
         }
+
         document.getElementById('eventFilter').addEventListener('change', updateDashboard);
         
         document.getElementById('searchInput').addEventListener('input', function(e) {

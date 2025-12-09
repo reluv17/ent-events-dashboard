@@ -75,12 +75,12 @@
             justify-content: center;
             gap: 15px;
             align-items: center;
-            flex-wrap: wrap;
         }
         #fileInput {
             padding: 10px;
         }
-        #loadButton, #clearButton {
+        #loadButton {
+            background-color: #c41230;
             color: white;
             border: none;
             padding: 12px 30px;
@@ -89,17 +89,8 @@
             border-radius: 4px;
             font-weight: bold;
         }
-        #loadButton {
-            background-color: #c41230;
-        }
         #loadButton:hover {
             background-color: #a00f28;
-        }
-        #clearButton {
-            background-color: #dc3545;
-        }
-        #clearButton:hover {
-            background-color: #c82333;
         }
         .data-status {
             text-align: center;
@@ -255,11 +246,10 @@
     </div>
     <div class="upload-section">
         <h3><strong>Update Dashboard Data:</strong> Upload your event registration CSV or Excel file</h3>
-        <p style="color: #666; font-size: 0.9em; margin-top: 10px;">💾 <strong>Auto-Save Enabled:</strong> Your data will be saved and persist even after refreshing the page.</p>
+        <p style="color: #666; font-size: 0.9em; margin-top: 10px;">💾 <strong>Auto-Save Enabled:</strong> Your data will be saved and persist even after refreshing the page. Simply upload a new file to update the dashboard.</p>
         <div class="upload-controls">
             <input type="file" id="fileInput" accept=".csv,.xlsx,.xls">
             <button id="loadButton">Load Event Data</button>
-            <button id="clearButton">Clear Saved Data</button>
         </div>
     </div>
 
@@ -348,26 +338,6 @@
         });
 
         document.getElementById('loadButton').addEventListener('click', loadFile);
-        
-        document.getElementById('clearButton').addEventListener('click', function() {
-            if (confirm('Are you sure you want to clear all saved data? This cannot be undone.')) {
-                localStorage.removeItem('rouxEventsData');
-                rawData = [];
-                document.getElementById('dataStatus').style.display = 'none';
-                document.getElementById('totalRegistrations').textContent = '0';
-                document.getElementById('totalAttendees').textContent = '0';
-                document.getElementById('totalCompanies').textContent = '0';
-                document.getElementById('totalGovt').textContent = '0';
-                document.getElementById('rouxStudents').textContent = '0';
-                document.getElementById('totalNortheastern').textContent = '0';
-                document.getElementById('tableContainer').innerHTML = '<div class="status-message">Please upload a CSV file to view event data</div>';
-                document.getElementById('companiesChart').innerHTML = '';
-                if (attendeeTypeChart) attendeeTypeChart.destroy();
-                if (eventComparisonChart) eventComparisonChart.destroy();
-                document.getElementById('eventFilter').innerHTML = '<option value="All">All Events</option>';
-                alert('All data cleared successfully!');
-            }
-        });
 
         function loadFile() {
             const fileInput = document.getElementById('fileInput');

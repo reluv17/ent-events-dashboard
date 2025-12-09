@@ -92,6 +92,18 @@
         #loadButton:hover {
             background-color: #a00f28;
         }
+        .data-status {
+            text-align: center;
+            padding: 15px;
+            margin: 0 40px 20px 40px;
+            background-color: #d4edda;
+            border: 2px solid #28a745;
+            border-radius: 4px;
+            display: none;
+        }
+        .data-status strong {
+            color: #155724;
+        }
         .filters {
             display: flex;
             gap: 20px;
@@ -234,11 +246,17 @@
     </div>
     <div class="upload-section">
         <h3><strong>Update Dashboard Data:</strong> Upload your event registration CSV or Excel file</h3>
+        <p style="color: #666; font-size: 0.9em; margin-top: 10px;">💡 <strong>Tip:</strong> Keep this tab open to maintain your data. Refreshing the page will clear all loaded data.</p>
         <div class="upload-controls">
             <input type="file" id="fileInput" accept=".csv,.xlsx,.xls">
             <button id="loadButton">Load Event Data</button>
         </div>
     </div>
+
+    <div id="dataStatus" class="data-status">
+        <strong>✓ Data Loaded Successfully!</strong> Dashboard is active. Note: Refreshing this page will clear all data.
+    </div>
+
     <div class="filters">
         <select id="eventFilter">
             <option value="All">All Events</option>
@@ -349,6 +367,8 @@
         function processData() {
             populateFilters();
             updateDashboard();
+            // Show data loaded indicator
+            document.getElementById('dataStatus').style.display = 'block';
         }
         function populateFilters() {
             const eventFilter = document.getElementById('eventFilter');

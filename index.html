@@ -92,29 +92,6 @@
         #loadButton:hover {
             background-color: #a00f28;
         }
-        .data-status {
-            text-align: center;
-            padding: 15px;
-            margin: 0 40px 20px 40px;
-            background-color: #d4edda;
-            border: 2px solid #28a745;
-            border-radius: 4px;
-            display: none;
-        }
-        .data-status strong {
-            color: #155724;
-        }
-        .attendance-note {
-            text-align: center;
-            padding: 10px;
-            margin: 0 40px 20px 40px;
-            background-color: #fff3cd;
-            border: 2px solid #ffc107;
-            border-radius: 4px;
-            font-size: 0.9em;
-            color: #856404;
-            display: none;
-        }
         .filters {
             display: flex;
             gap: 20px;
@@ -257,20 +234,10 @@
     </div>
     <div class="upload-section">
         <h3><strong>Update Dashboard Data:</strong> Upload your event registration CSV or Excel file</h3>
-        <p style="color: #666; font-size: 0.9em; margin-top: 10px;">💾 <strong>Auto-Save Enabled:</strong> Your data will be saved and persist even after refreshing the page. Simply upload a new file to update the dashboard.</p>
-        <p style="color: #666; font-size: 0.85em; margin-top: 8px;">📋 <strong>Attendance Tracking:</strong> Add an "Attended" column with "Yes" or "1" to track actual attendance. Events without this column will estimate 80% attendance.</p>
         <div class="upload-controls">
             <input type="file" id="fileInput" accept=".csv,.xlsx,.xls">
             <button id="loadButton">Load Event Data</button>
         </div>
-    </div>
-
-    <div id="dataStatus" class="data-status">
-        <strong>✓ Data Loaded Successfully!</strong> Dashboard is active and data is saved to your browser.
-    </div>
-
-    <div id="attendanceNote" class="attendance-note">
-        <strong>⚠️ Attendance Estimate:</strong> <span id="estimateText"></span>
     </div>
 
     <div class="filters">
@@ -412,7 +379,6 @@
         function processData() {
             populateFilters();
             updateDashboard();
-            document.getElementById('dataStatus').style.display = 'block';
         }
 
         function populateFilters() {
@@ -442,17 +408,6 @@
             // Calculate attendance with new logic
             const attendanceResult = calculateAttendance(filtered);
             const totalAttendees = attendanceResult.count;
-            const hasEstimates = attendanceResult.hasEstimates;
-            const estimatedEvents = attendanceResult.estimatedEvents;
-            
-            // Show/hide attendance note
-            if (hasEstimates) {
-                document.getElementById('attendanceNote').style.display = 'block';
-                document.getElementById('estimateText').textContent = 
-                    `Some events (${estimatedEvents.join(', ')}) don't have attendance tracking. Showing 80% estimated attendance for those events.`;
-            } else {
-                document.getElementById('attendanceNote').style.display = 'none';
-            }
             
             // All other metrics count total registrations (not attendance)
             const personalEmailDomains = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'me.com', 'aol.com', 'mail.com'];

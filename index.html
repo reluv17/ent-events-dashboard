@@ -104,6 +104,17 @@
         .data-status strong {
             color: #155724;
         }
+        .attendance-note {
+            text-align: center;
+            padding: 10px;
+            margin: 0 40px 20px 40px;
+            background-color: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #856404;
+            display: none;
+        }
         .filters {
             display: flex;
             gap: 20px;
@@ -247,6 +258,7 @@
     <div class="upload-section">
         <h3><strong>Update Dashboard Data:</strong> Upload your event registration CSV or Excel file</h3>
         <p style="color: #666; font-size: 0.9em; margin-top: 10px;">💾 <strong>Auto-Save Enabled:</strong> Your data will be saved and persist even after refreshing the page. Simply upload a new file to update the dashboard.</p>
+        <p style="color: #666; font-size: 0.85em; margin-top: 8px;">📋 <strong>Attendance Tracking:</strong> Add an "Attended" column with "Yes" or "1" to track actual attendance. Events without this column will estimate 80% attendance.</p>
         <div class="upload-controls">
             <input type="file" id="fileInput" accept=".csv,.xlsx,.xls">
             <button id="loadButton">Load Event Data</button>
@@ -255,6 +267,10 @@
 
     <div id="dataStatus" class="data-status">
         <strong>✓ Data Loaded Successfully!</strong> Dashboard is active and data is saved to your browser.
+    </div>
+
+    <div id="attendanceNote" class="attendance-note">
+        <strong>⚠️ Attendance Estimate:</strong> <span id="estimateText"></span>
     </div>
 
     <div class="filters">
@@ -423,12 +439,22 @@
             
             const totalReg = filtered.length;
             
-            const emails = filtered.map(row => {
-                const email = row['Buyer email'] || row['Email'] || '';
-                return email.trim().toLowerCase();
-            }).filter(e => e);
-            const uniqueAttendees = [...new Set(emails)];
+            // Calculate attendance with new logic
+            const attendanceResult = calculateAttendance(filtered);
+            const totalAttendees = attendanceResult.count;
+            const hasEstimates = attendanceResult.hasEstimates;
+            const estimatedEvents = attendanceResult.estimatedEvents;
             
+            // Show/hide attendance note
+            if (hasEstimates) {
+                document.getElementById('attendanceNote').style.display = 'block';
+                document.getElementById('estimateText').textContent = 
+                    `Some events (${estimatedEvents.join(', ')}) don't have attendance tracking. Showing 80% estimated attendance for those events.`;
+            } else {
+                document.getElementById('attendanceNote').style.display = 'none';
+            }
+            
+            // All other metrics count total registrations (not attendance)
             const personalEmailDomains = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'me.com', 'aol.com', 'mail.com'];
             const excludedCompanies = ['retired', 'independent', 'na', 'n/a', 'self', '?', 'none', 'student'];
             
@@ -553,7 +579,7 @@
             }).length;
             
             document.getElementById('totalRegistrations').textContent = totalReg;
-            document.getElementById('totalAttendees').textContent = uniqueAttendees.length;
+            document.getElementById('totalAttendees').textContent = Math.round(totalAttendees);
             document.getElementById('totalCompanies').textContent = totalCompaniesCount;
             document.getElementById('totalGovt').textContent = govtCount;
             document.getElementById('rouxStudents').textContent = rouxStudents;
@@ -564,6 +590,72 @@
             updateEventComparisonChart(filtered);
             updateMultiDayChart(filtered);
             renderTable(filtered);
+        }
+
+        function calculateAttendance(data) {
+            // Check if data has 'Attended' column
+            const hasAttendedColumn = data.some(row => row.hasOwnProperty('Attended'));
+            
+            let attendedEmails = new Set();
+            let hasEstimates = false;
+            let estimatedEvents = [];
+            
+            // Group by event to handle mixed scenarios
+            const eventGroups = {};
+            data.forEach(row => {
+                const event = row['Event'] || 'Unknown';
+                if (!eventGroups[event]) {
+                    eventGroups[event] = [];
+                }
+                eventGroups[event].push(row);
+            });
+            
+            // Process each event
+            Object.keys(eventGroups).forEach(eventName => {
+                const eventData = eventGroups[eventName];
+                
+                // Check if THIS event has attendance tracking
+                const eventHasAttendance = eventData.some(row => {
+                    const attended = row['Attended'];
+                    return attended && (attended.toString().toLowerCase() === 'yes' || attended.toString() === '1');
+                });
+                
+                if (eventHasAttendance) {
+                    // Count actual attendance for this event
+                    eventData.forEach(row => {
+                        const attended = row['Attended'];
+                        if (attended && (attended.toString().toLowerCase() === 'yes' || attended.toString() === '1')) {
+                            const email = (row['Buyer email'] || row['Email'] || '').trim().toLowerCase();
+                            if (email) {
+                                attendedEmails.add(email);
+                            }
+                        }
+                    });
+                } else {
+                    // Estimate 80% attendance for this event
+                    hasEstimates = true;
+                    estimatedEvents.push(eventName);
+                    
+                    // Get unique registrants for this event
+                    const eventEmails = eventData.map(row => {
+                        const email = (row['Buyer email'] || row['Email'] || '').trim().toLowerCase();
+                        return email;
+                    }).filter(e => e);
+                    
+                    const uniqueEventEmails = [...new Set(eventEmails)];
+                    const estimatedAttendees = Math.round(uniqueEventEmails.length * 0.8);
+                    
+                    // Add estimated attendees (we'll use a portion of the emails)
+                    const emailsToAdd = uniqueEventEmails.slice(0, estimatedAttendees);
+                    emailsToAdd.forEach(email => attendedEmails.add(email));
+                }
+            });
+            
+            return {
+                count: attendedEmails.size,
+                hasEstimates: hasEstimates,
+                estimatedEvents: estimatedEvents
+            };
         }
 
         function updateCompaniesChart(data) {
@@ -797,6 +889,9 @@
                 return;
             }
             
+            // Check if Attended column exists
+            const hasAttendedColumn = data.some(row => row.hasOwnProperty('Attended'));
+            
             let html = `
                 <table>
                     <thead>
@@ -806,6 +901,7 @@
                             <th>Email</th>
                             <th>Registration Date</th>
                             <th>Event</th>
+                            ${hasAttendedColumn ? '<th>Attended</th>' : ''}
                             <th>Days Attending</th>
                         </tr>
                     </thead>
@@ -817,6 +913,8 @@
                 const email = row['Buyer email'] || row['Email'] || 'N/A';
                 const regDate = row['Order date & time'] || row['Registration Date'] || 'N/A';
                 const daysAttending = row['Which days do you plan to attend?'] || 'N/A';
+                const attended = row['Attended'] || 'N/A';
+                
                 html += `
                     <tr>
                         <td>${name || 'N/A'}</td>
@@ -824,6 +922,7 @@
                         <td>${email}</td>
                         <td>${regDate}</td>
                         <td>${row['Event'] || 'N/A'}</td>
+                        ${hasAttendedColumn ? `<td>${attended}</td>` : ''}
                         <td>${daysAttending}</td>
                     </tr>
                 `;

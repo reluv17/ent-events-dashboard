@@ -108,7 +108,7 @@
         }
         .metrics {
             display: grid;
-            grid-template-columns: repeat(6, 1fr);
+            grid-template-columns: repeat(7, 1fr);
             gap: 20px;
             margin-bottom: 30px;
             padding: 0 40px;
@@ -403,6 +403,10 @@
             <div class="metric-value" id="totalRegistrations">0</div>
             <div class="metric-label">Total Registrations</div>
         </div>
+        <div class="metric-card" onclick="openModal('uniqueRegistrants')">
+            <div class="metric-value" id="uniqueRegistrants">0</div>
+            <div class="metric-label">Unique Registrants</div>
+        </div>
         <div class="metric-card" onclick="openModal('attendees')">
             <div class="metric-value" id="totalAttendees">0</div>
             <div class="metric-label">Total Attendees</div>
@@ -568,14 +572,20 @@
         function updateDashboard() {
             const filtered = getFilteredData();
             
-            // Total Registrations
+            // Total Registrations (raw count)
             document.getElementById('totalRegistrations').textContent = filtered.length;
+            
+            // Unique Registrants (unique people who registered)
+            const uniqueEmails = [...new Set(filtered.map(row => {
+                return (row['Buyer email'] || row['Email'] || '').trim().toLowerCase();
+            }).filter(e => e))];
+            document.getElementById('uniqueRegistrants').textContent = uniqueEmails.length;
             
             // Total Attendees (unique people who attended)
             const attendanceResult = calculateAttendance(filtered);
             document.getElementById('totalAttendees').textContent = Math.round(attendanceResult.count);
             
-            // Companies, Students, Staff, Govt (based on registrations, not attendance)
+            // Companies, Students, Staff, Govt (based on registrations)
             const metrics = calculateMetrics(filtered);
             document.getElementById('totalCompanies').textContent = metrics.companies;
             document.getElementById('totalGovt').textContent = metrics.govt;
@@ -627,7 +637,6 @@
             const personalEmails = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'me.com', 'aol.com', 'mail.com'];
             const excluded = ['retired', 'independent', 'na', 'n/a', 'self', '?', 'none', 'student'];
             
-            // Build domain map
             const domains = {};
             data.forEach(row => {
                 const email = (row['Buyer email'] || row['Email'] || '').trim().toLowerCase();
@@ -729,6 +738,10 @@
             switch(type) {
                 case 'registrations':
                     title = 'Total Registrations Details';
+                    content = generateAllRegistrationsModal(filtered);
+                    break;
+                case 'uniqueRegistrants':
+                    title = 'Unique Registrants Details';
                     content = generateRegistrationsModal(filtered);
                     break;
                 case 'attendees':
@@ -766,6 +779,24 @@
             if (event.target == document.getElementById('detailModal')) {
                 closeModal();
             }
+        }
+
+        function generateAllRegistrationsModal(data) {
+            // Show ALL entries (not deduplicated)
+            currentModalData = data.map(row => ({
+                name: `${row['First name'] || ''} ${row['Last name'] || ''}`.trim(),
+                email: (row['Buyer email'] || row['Email'] || '').trim(),
+                company: row['Company'] || 'N/A',
+                event: row['Event'] || 'N/A'
+            }));
+            
+            let html = '<table class="modal-table"><thead><tr><th>Name</th><th>Email</th><th>Company</th><th>Event</th></tr></thead><tbody>';
+            
+            currentModalData.forEach(p => {
+                html += `<tr><td>${p.name || 'N/A'}</td><td>${p.email}</td><td>${p.company}</td><td>${p.event}</td></tr>`;
+            });
+            
+            return html + '</tbody></table>';
         }
 
         function generateRegistrationsModal(data) {
@@ -932,7 +963,6 @@
                     const name = `${row['First name'] || ''} ${row['Last name'] || ''}`.trim();
                     const personEmail = email || 'N/A';
                     
-                    // Check for duplicates
                     const exists = companies[id].people.some(p => p.email === personEmail);
                     if (!exists) {
                         companies[id].people.push({ name: name, email: personEmail });
@@ -1089,6 +1119,11 @@
                 currentModalData.forEach(item => {
                     const people = item.people.map(p => `${p.name} (${p.email})`).join('; ');
                     csv += `"${item.company}",${item.count},"${people}"\n`;
+                });
+            } else if (currentModalType === 'registrations') {
+                csv = 'Name,Email,Company,Event\n';
+                currentModalData.forEach(item => {
+                    csv += `"${item.name}","${item.email}","${item.company}","${item.event}"\n`;
                 });
             } else {
                 csv = 'Name,Email,Company/Method,Events\n';
@@ -1315,7 +1350,7 @@
             nTimer = setTimeout(() => nClicks = 0, 1000);
         });
         
-        // Company debug - triple-click while holding Shift on companies card
+        // Company debug - Shift + triple-click on companies card
         document.getElementById('companiesCard').addEventListener('click', function(e) {
             if (e.shiftKey && e.detail === 3) {
                 e.stopPropagation();

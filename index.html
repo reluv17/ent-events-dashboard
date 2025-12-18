@@ -119,10 +119,12 @@
             text-align: center;
             border: 2px solid #c41230;
             border-radius: 8px;
+        }
+        .metric-card.clickable {
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
         }
-        .metric-card:hover {
+        .metric-card.clickable:hover {
             transform: translateY(-5px);
             box-shadow: 0 4px 8px rgba(196, 18, 48, 0.3);
         }
@@ -156,6 +158,28 @@
             margin-bottom: 20px;
             padding-bottom: 10px;
             border-bottom: 2px solid #c41230;
+        }
+        .stats-summary-inline {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-box-inline {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .stat-box-inline .value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #c41230;
+        }
+        .stat-box-inline .label {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 5px;
         }
         .table-section {
             background-color: white;
@@ -222,8 +246,6 @@
             font-weight: bold;
             transition: width 0.3s ease;
         }
-        
-        /* Modal Styles */
         .modal {
             display: none;
             position: fixed;
@@ -233,14 +255,7 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0,0,0,0.5);
-            animation: fadeIn 0.3s;
         }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
         .modal-content {
             background-color: white;
             margin: 3% auto;
@@ -251,14 +266,7 @@
             max-height: 85vh;
             display: flex;
             flex-direction: column;
-            animation: slideDown 0.3s;
         }
-        
-        @keyframes slideDown {
-            from { transform: translateY(-50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        
         .modal-header {
             background-color: #c41230;
             color: white;
@@ -268,12 +276,10 @@
             justify-content: space-between;
             align-items: center;
         }
-        
         .modal-header h2 {
             margin: 0;
             font-size: 1.5em;
         }
-        
         .close {
             color: white;
             font-size: 35px;
@@ -281,24 +287,20 @@
             cursor: pointer;
             line-height: 1;
         }
-        
         .close:hover {
             opacity: 0.8;
         }
-        
         .modal-body {
             padding: 30px;
             overflow-y: auto;
             flex: 1;
         }
-        
         .modal-search {
             margin-bottom: 20px;
             display: flex;
             gap: 10px;
             align-items: center;
         }
-        
         .modal-search input {
             flex: 1;
             padding: 10px;
@@ -306,7 +308,6 @@
             border-radius: 4px;
             font-size: 1em;
         }
-        
         .modal-export-btn {
             background-color: #c41230;
             color: white;
@@ -316,16 +317,13 @@
             cursor: pointer;
             font-weight: bold;
         }
-        
         .modal-export-btn:hover {
             background-color: #a00f28;
         }
-        
         .modal-table {
             width: 100%;
             border-collapse: collapse;
         }
-        
         .modal-table th {
             background-color: #c41230;
             color: white;
@@ -335,27 +333,22 @@
             position: sticky;
             top: 0;
         }
-        
         .modal-table td {
             padding: 12px;
             border-bottom: 1px solid #ddd;
         }
-        
         .modal-table tr:nth-child(even) {
             background-color: #f9f9f9;
         }
-        
         .modal-table tr:hover {
             background-color: #f0f0f0;
         }
-        
         .company-group {
             margin-bottom: 30px;
             border: 1px solid #ddd;
             border-radius: 4px;
             overflow: hidden;
         }
-        
         .company-group-header {
             background-color: #f5f5f5;
             padding: 15px;
@@ -363,7 +356,6 @@
             color: #333;
             border-bottom: 2px solid #c41230;
         }
-        
         .company-group-body {
             padding: 15px;
         }
@@ -399,31 +391,31 @@
     </div>
 
     <div class="metrics">
-        <div class="metric-card" onclick="openModal('registrations')">
+        <div class="metric-card">
             <div class="metric-value" id="totalRegistrations">0</div>
             <div class="metric-label">Total Registrations</div>
         </div>
-        <div class="metric-card" onclick="openModal('uniqueRegistrants')">
+        <div class="metric-card clickable" onclick="openModal('uniqueRegistrants')">
             <div class="metric-value" id="uniqueRegistrants">0</div>
             <div class="metric-label">Unique Registrants</div>
         </div>
-        <div class="metric-card" onclick="openModal('attendees')">
+        <div class="metric-card clickable" onclick="openModal('attendees')">
             <div class="metric-value" id="totalAttendees">0</div>
             <div class="metric-label">Total Attendees</div>
         </div>
-        <div class="metric-card" id="companiesCard" onclick="openModal('companies')">
+        <div class="metric-card clickable" id="companiesCard" onclick="openModal('companies')">
             <div class="metric-value" id="totalCompanies">0</div>
             <div class="metric-label">Unique Companies</div>
         </div>
-        <div class="metric-card" onclick="openModal('govt')">
+        <div class="metric-card clickable" onclick="openModal('govt')">
             <div class="metric-value" id="totalGovt">0</div>
             <div class="metric-label">Gov't Institutions</div>
         </div>
-        <div class="metric-card" onclick="openModal('students')">
+        <div class="metric-card clickable" onclick="openModal('students')">
             <div class="metric-value" id="rouxStudents">0</div>
             <div class="metric-label">Roux Students</div>
         </div>
-        <div class="metric-card" onclick="openModal('staff')">
+        <div class="metric-card clickable" onclick="openModal('staff')">
             <div class="metric-value" id="totalNortheastern">0</div>
             <div class="metric-label">Northeastern/Roux Staff</div>
         </div>
@@ -442,6 +434,24 @@
             <div class="chart-title">Event Comparison</div>
             <canvas id="eventComparisonChart" height="250"></canvas>
         </div>
+        <div class="chart-container">
+            <div class="chart-title">Event Participation Distribution</div>
+            <div class="stats-summary-inline">
+                <div class="stat-box-inline">
+                    <div class="value" id="statTotalPeople">0</div>
+                    <div class="label">Unique Registrants</div>
+                </div>
+                <div class="stat-box-inline">
+                    <div class="value" id="statAvgEvents">0</div>
+                    <div class="label">Avg Events/Person</div>
+                </div>
+                <div class="stat-box-inline">
+                    <div class="value" id="statMaxEvents">0</div>
+                    <div class="label">Max Events</div>
+                </div>
+            </div>
+            <canvas id="participationChart" height="200"></canvas>
+        </div>
         <div class="chart-container" id="multiDayContainer" style="display: none;">
             <div class="chart-title" id="multiDayTitle">Attendance by Event Day</div>
             <div id="multiDayChart"></div>
@@ -458,7 +468,6 @@
         </div>
     </div>
 
-    <!-- Modal -->
     <div id="detailModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -482,6 +491,7 @@
         let rawData = [];
         let attendeeTypeChart = null;
         let eventComparisonChart = null;
+        let participationChart = null;
         let currentModalData = [];
         let currentModalType = '';
 
@@ -490,7 +500,6 @@
             if (savedData) {
                 try {
                     rawData = JSON.parse(savedData);
-                    console.log('Loaded saved data:', rawData.length, 'rows');
                     processData();
                 } catch (e) {
                     console.error('Error loading saved data:', e);
@@ -503,15 +512,12 @@
         function loadFile() {
             const fileInput = document.getElementById('fileInput');
             const file = fileInput.files[0];
-            
             if (!file) {
                 alert('Please select a file first');
                 return;
             }
-            
             const reader = new FileReader();
             const fileName = file.name.toLowerCase();
-            
             if (fileName.endsWith('.csv')) {
                 reader.onload = function(e) {
                     Papa.parse(e.target.result, {
@@ -553,11 +559,8 @@
         function populateFilters() {
             const eventFilter = document.getElementById('eventFilter');
             const events = [...new Set(rawData.map(row => row['Event']).filter(e => e))];
-            
             eventFilter.innerHTML = '<option value="All">All Events</option>';
-            events.forEach(event => {
-                eventFilter.appendChild(new Option(event, event));
-            });
+            events.forEach(event => eventFilter.appendChild(new Option(event, event)));
         }
 
         function getFilteredData() {
@@ -571,32 +574,68 @@
 
         function updateDashboard() {
             const filtered = getFilteredData();
-            
-            // Total Registrations (raw count)
             document.getElementById('totalRegistrations').textContent = filtered.length;
-            
-            // Unique Registrants (unique people who registered)
-            const uniqueEmails = [...new Set(filtered.map(row => {
-                return (row['Buyer email'] || row['Email'] || '').trim().toLowerCase();
-            }).filter(e => e))];
+            const uniqueEmails = [...new Set(filtered.map(row => (row['Buyer email'] || row['Email'] || '').trim().toLowerCase()).filter(e => e))];
             document.getElementById('uniqueRegistrants').textContent = uniqueEmails.length;
-            
-            // Total Attendees (unique people who attended)
             const attendanceResult = calculateAttendance(filtered);
             document.getElementById('totalAttendees').textContent = Math.round(attendanceResult.count);
-            
-            // Companies, Students, Staff, Govt (based on registrations)
             const metrics = calculateMetrics(filtered);
             document.getElementById('totalCompanies').textContent = metrics.companies;
             document.getElementById('totalGovt').textContent = metrics.govt;
             document.getElementById('rouxStudents').textContent = metrics.students;
             document.getElementById('totalNortheastern').textContent = metrics.staff;
-            
             updateCompaniesChart(filtered);
             updateAttendeeTypeChart(filtered);
             updateEventComparisonChart(filtered);
+            updateParticipationChart(filtered);
             updateMultiDayChart(filtered);
             renderTable(filtered);
+        }
+
+        function updateParticipationChart(data) {
+            const people = {};
+            data.forEach(row => {
+                const email = (row['Buyer email'] || row['Email'] || '').trim().toLowerCase();
+                if (email) {
+                    if (!people[email]) people[email] = new Set();
+                    people[email].add(row['Event']);
+                }
+            });
+            const histogram = {};
+            Object.values(people).forEach(events => {
+                const count = events.size;
+                histogram[count] = (histogram[count] || 0) + 1;
+            });
+            const eventCounts = Object.values(people).map(e => e.size);
+            const totalPeople = eventCounts.length;
+            const avgEvents = totalPeople > 0 ? (eventCounts.reduce((a, b) => a + b, 0) / totalPeople).toFixed(1) : 0;
+            const maxEvents = totalPeople > 0 ? Math.max(...eventCounts) : 0;
+            document.getElementById('statTotalPeople').textContent = totalPeople;
+            document.getElementById('statAvgEvents').textContent = avgEvents;
+            document.getElementById('statMaxEvents').textContent = maxEvents;
+            const labels = Object.keys(histogram).sort((a, b) => a - b);
+            const counts = labels.map(l => histogram[l]);
+            const ctx = document.getElementById('participationChart');
+            if (participationChart) participationChart.destroy();
+            participationChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels.map(l => `${l} ${l === '1' ? 'event' : 'events'}`),
+                    datasets: [{
+                        label: 'Number of People',
+                        data: counts,
+                        backgroundColor: '#c41230'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                    }
+                }
+            });
         }
 
         function calculateAttendance(data) {
@@ -606,15 +645,12 @@
                 if (!eventGroups[event]) eventGroups[event] = [];
                 eventGroups[event].push(row);
             });
-            
             const attendedEmails = new Set();
-            
             Object.values(eventGroups).forEach(eventData => {
                 const hasAttendance = eventData.some(row => {
                     const val = row['Attended'];
                     return val && (val.toString().toLowerCase() === 'yes' || val.toString() === '1');
                 });
-                
                 if (hasAttendance) {
                     eventData.forEach(row => {
                         const val = row['Attended'];
@@ -629,14 +665,12 @@
                     emails.slice(0, estimated).forEach(e => attendedEmails.add(e));
                 }
             });
-            
             return { count: attendedEmails.size };
         }
 
         function calculateMetrics(data) {
             const personalEmails = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'me.com', 'aol.com', 'mail.com'];
             const excluded = ['retired', 'independent', 'na', 'n/a', 'self', '?', 'none', 'student'];
-            
             const domains = {};
             data.forEach(row => {
                 const email = (row['Buyer email'] || row['Email'] || '').trim().toLowerCase();
@@ -647,7 +681,6 @@
                     }
                 }
             });
-            
             function normalize(name) {
                 if (!name) return null;
                 const clean = name.toLowerCase().replace(/\s+/g, '').replace(/[,\.]/g, '').replace(/\b(llc|inc|ltd|co|corp|corporation|company|group|the)\b/g, '').trim();
@@ -657,15 +690,12 @@
                 }
                 return name.toLowerCase();
             }
-            
             const companies = new Set();
             data.forEach(row => {
                 const email = (row['Buyer email'] || row['Email'] || '').trim().toLowerCase();
                 const company = (row['Company'] || '').trim();
                 const companyLower = company.toLowerCase();
-                
                 let id = null;
-                
                 if (!email || !email.includes('@')) {
                     if (company && !excluded.includes(companyLower) && !companyLower.includes('northeastern') && !companyLower.includes('roux') && !companyLower.includes('student')) {
                         id = normalize(company);
@@ -673,7 +703,6 @@
                 } else {
                     const domain = email.split('@')[1];
                     if (domain === 'northeastern.edu') return;
-                    
                     if (personalEmails.includes(domain)) {
                         if (company && !excluded.includes(companyLower) && !companyLower.includes('northeastern') && !companyLower.includes('roux') && !companyLower.includes('student')) {
                             id = normalize(company);
@@ -682,67 +711,44 @@
                         id = domain;
                     }
                 }
-                
                 if (id) companies.add(id);
             });
-            
             const govt = data.filter(row => {
                 const c = (row['Company'] || '').toLowerCase();
                 const e = (row['Buyer email'] || row['Email'] || '').toLowerCase();
                 return c.includes('town of') || c.includes('city of') || c.includes('county') || e.includes('.gov') || c.includes('government') || c.includes('municipal');
             }).length;
-            
             const students = data.filter(row => {
                 const email = (row['Buyer email'] || row['Email'] || '').toLowerCase();
                 const company = (row['Company'] || '').toLowerCase();
                 const pattern = /^[a-z]{3,}\.[a-z]{1,3}@northeastern\.edu$/;
-                
                 if (pattern.test(email)) return true;
-                
                 const domain = email.includes('@') ? email.split('@')[1] : '';
-                const isPersonal = personalEmails.includes(domain);
-                
-                return isPersonal && (company === 'student' || company.includes('student') || company.includes('northeastern') || company.includes('roux'));
+                return personalEmails.includes(domain) && (company === 'student' || company.includes('student') || company.includes('northeastern') || company.includes('roux'));
             }).length;
-            
             const staff = data.filter(row => {
                 const email = (row['Buyer email'] || row['Email'] || '').toLowerCase();
                 const staffPattern = /^[a-z]{1,3}\.[a-z]{3,}@northeastern\.edu$/;
                 const studentPattern = /^[a-z]{3,}\.[a-z]{1,3}@northeastern\.edu$/;
-                
                 return email.includes('northeastern.edu') && (staffPattern.test(email) || !studentPattern.test(email));
             }).length;
-            
-            return {
-                companies: companies.size,
-                govt: govt,
-                students: students,
-                staff: staff
-            };
+            return { companies: companies.size, govt: govt, students: students, staff: staff };
         }
 
-        // Modal Functions
         function openModal(type) {
             if (rawData.length === 0) {
                 alert('Please upload data first');
                 return;
             }
-            
             currentModalType = type;
             const modal = document.getElementById('detailModal');
             const filtered = getFilteredData();
-            
             let title = '';
             let content = '';
-            
             switch(type) {
-                case 'registrations':
-                    title = 'Total Registrations Details';
-                    content = generateAllRegistrationsModal(filtered);
-                    break;
                 case 'uniqueRegistrants':
                     title = 'Unique Registrants Details';
-                    content = generateRegistrationsModal(filtered);
+                    content = generateUniqueRegistrantsModal(filtered);
                     break;
                 case 'attendees':
                     title = 'Total Attendees Details';
@@ -765,7 +771,6 @@
                     content = generateStaffModal(filtered);
                     break;
             }
-            
             document.getElementById('modalTitle').textContent = title;
             document.getElementById('modalContent').innerHTML = content;
             modal.style.display = 'block';
@@ -781,25 +786,7 @@
             }
         }
 
-        function generateAllRegistrationsModal(data) {
-            // Show ALL entries (not deduplicated)
-            currentModalData = data.map(row => ({
-                name: `${row['First name'] || ''} ${row['Last name'] || ''}`.trim(),
-                email: (row['Buyer email'] || row['Email'] || '').trim(),
-                company: row['Company'] || 'N/A',
-                event: row['Event'] || 'N/A'
-            }));
-            
-            let html = '<table class="modal-table"><thead><tr><th>Name</th><th>Email</th><th>Company</th><th>Event</th></tr></thead><tbody>';
-            
-            currentModalData.forEach(p => {
-                html += `<tr><td>${p.name || 'N/A'}</td><td>${p.email}</td><td>${p.company}</td><td>${p.event}</td></tr>`;
-            });
-            
-            return html + '</tbody></table>';
-        }
-
-        function generateRegistrationsModal(data) {
+        function generateUniqueRegistrantsModal(data) {
             const unique = {};
             data.forEach(row => {
                 const email = (row['Buyer email'] || row['Email'] || '').trim().toLowerCase();
@@ -815,15 +802,11 @@
                     unique[email].events.push(row['Event']);
                 }
             });
-            
             currentModalData = Object.values(unique);
-            
-            let html = '<table class="modal-table"><thead><tr><th>Name</th><th>Email</th><th>Company</th><th>Events</th></tr></thead><tbody>';
-            
+            let html = '<table class="modal-table"><thead><tr><th>Name</th><th>Email</th><th>Company</th><th>Events Registered</th></tr></thead><tbody>';
             currentModalData.forEach(p => {
                 html += `<tr><td>${p.name || 'N/A'}</td><td>${p.email}</td><td>${p.company}</td><td>${[...new Set(p.events)].join(', ')}</td></tr>`;
             });
-            
             return html + '</tbody></table>';
         }
 
@@ -834,15 +817,12 @@
                 if (!eventGroups[event]) eventGroups[event] = [];
                 eventGroups[event].push(row);
             });
-            
             const attendees = {};
-            
             Object.entries(eventGroups).forEach(([eventName, eventData]) => {
                 const hasAttendance = eventData.some(row => {
                     const val = row['Attended'];
                     return val && (val.toString().toLowerCase() === 'yes' || val.toString() === '1');
                 });
-                
                 if (hasAttendance) {
                     eventData.forEach(row => {
                         const val = row['Attended'];
@@ -872,10 +852,8 @@
                             };
                         }
                     });
-                    
                     const emails = Object.keys(eventEmails);
                     const estimated = Math.round(emails.length * 0.8);
-                    
                     emails.slice(0, estimated).forEach(email => {
                         if (!attendees[email]) {
                             attendees[email] = {
@@ -889,22 +867,17 @@
                     });
                 }
             });
-            
             currentModalData = Object.values(attendees);
-            
             let html = '<table class="modal-table"><thead><tr><th>Name</th><th>Email</th><th>Company</th><th>Events Attended</th></tr></thead><tbody>';
-            
             currentModalData.forEach(p => {
                 html += `<tr><td>${p.name || 'N/A'}</td><td>${p.email}</td><td>${p.company}</td><td>${p.events.join(', ')}</td></tr>`;
             });
-            
             return html + '</tbody></table>';
         }
 
         function generateCompaniesModal(data) {
             const personalEmails = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'me.com', 'aol.com', 'mail.com'];
             const excluded = ['retired', 'independent', 'na', 'n/a', 'self', '?', 'none', 'student'];
-            
             const domains = {};
             data.forEach(row => {
                 const email = (row['Buyer email'] || row['Email'] || '').trim().toLowerCase();
@@ -915,7 +888,6 @@
                     }
                 }
             });
-            
             function normalize(name) {
                 if (!name) return null;
                 const clean = name.toLowerCase().replace(/\s+/g, '').replace(/[,\.]/g, '').replace(/\b(llc|inc|ltd|co|corp|corporation|company|group|the)\b/g, '').trim();
@@ -925,16 +897,12 @@
                 }
                 return name.toLowerCase();
             }
-            
             const companies = {};
-            
             data.forEach(row => {
                 const email = (row['Buyer email'] || row['Email'] || '').trim().toLowerCase();
                 const company = (row['Company'] || '').trim();
                 const companyLower = company.toLowerCase();
-                
                 let id = null;
-                
                 if (!email || !email.includes('@')) {
                     if (company && !excluded.includes(companyLower) && !companyLower.includes('northeastern') && !companyLower.includes('roux') && !companyLower.includes('student')) {
                         id = normalize(company);
@@ -942,7 +910,6 @@
                 } else {
                     const domain = email.split('@')[1];
                     if (domain === 'northeastern.edu') return;
-                    
                     if (personalEmails.includes(domain)) {
                         if (company && !excluded.includes(companyLower) && !companyLower.includes('northeastern') && !companyLower.includes('roux') && !companyLower.includes('student')) {
                             id = normalize(company);
@@ -951,31 +918,23 @@
                         id = domain;
                     }
                 }
-                
                 if (id) {
                     if (!companies[id]) {
-                        companies[id] = {
-                            name: company || id,
-                            people: []
-                        };
+                        companies[id] = { name: company || id, people: [] };
                     }
-                    
                     const name = `${row['First name'] || ''} ${row['Last name'] || ''}`.trim();
                     const personEmail = email || 'N/A';
-                    
                     const exists = companies[id].people.some(p => p.email === personEmail);
                     if (!exists) {
                         companies[id].people.push({ name: name, email: personEmail });
                     }
                 }
             });
-            
             currentModalData = Object.entries(companies).map(([id, d]) => ({
                 company: d.name,
                 count: d.people.length,
                 people: d.people
             })).sort((a, b) => b.count - a.count);
-            
             let html = '';
             currentModalData.forEach(c => {
                 html += `<div class="company-group">
@@ -987,7 +946,6 @@
                 });
                 html += `</tbody></table></div></div>`;
             });
-            
             return html;
         }
 
@@ -997,7 +955,6 @@
                 const e = (row['Buyer email'] || row['Email'] || '').toLowerCase();
                 return c.includes('town of') || c.includes('city of') || c.includes('county') || e.includes('.gov') || c.includes('government') || c.includes('municipal');
             });
-            
             const unique = {};
             govt.forEach(row => {
                 const email = (row['Buyer email'] || row['Email'] || '').trim().toLowerCase();
@@ -1013,32 +970,24 @@
                     unique[email].events.push(row['Event']);
                 }
             });
-            
             currentModalData = Object.values(unique);
-            
             let html = '<table class="modal-table"><thead><tr><th>Name</th><th>Email</th><th>Institution</th><th>Events</th></tr></thead><tbody>';
-            
             currentModalData.forEach(p => {
                 html += `<tr><td>${p.name || 'N/A'}</td><td>${p.email}</td><td>${p.company}</td><td>${[...new Set(p.events)].join(', ')}</td></tr>`;
             });
-            
             return html + '</tbody></table>';
         }
 
         function generateStudentsModal(data) {
             const personalEmails = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'me.com', 'aol.com', 'mail.com'];
-            
             const students = data.filter(row => {
                 const email = (row['Buyer email'] || row['Email'] || '').toLowerCase();
                 const company = (row['Company'] || '').toLowerCase();
                 const pattern = /^[a-z]{3,}\.[a-z]{1,3}@northeastern\.edu$/;
-                
                 if (pattern.test(email)) return true;
-                
                 const domain = email.includes('@') ? email.split('@')[1] : '';
                 return personalEmails.includes(domain) && (company === 'student' || company.includes('student') || company.includes('northeastern') || company.includes('roux'));
             });
-            
             const unique = {};
             students.forEach(row => {
                 const email = (row['Buyer email'] || row['Email'] || '').trim().toLowerCase();
@@ -1055,15 +1004,11 @@
                     unique[email].events.push(row['Event']);
                 }
             });
-            
             currentModalData = Object.values(unique);
-            
             let html = '<table class="modal-table"><thead><tr><th>Name</th><th>Email</th><th>Detection Method</th><th>Events</th></tr></thead><tbody>';
-            
             currentModalData.forEach(p => {
                 html += `<tr><td>${p.name || 'N/A'}</td><td>${p.email}</td><td>${p.method}</td><td>${[...new Set(p.events)].join(', ')}</td></tr>`;
             });
-            
             return html + '</tbody></table>';
         }
 
@@ -1072,10 +1017,8 @@
                 const email = (row['Buyer email'] || row['Email'] || '').toLowerCase();
                 const staffPattern = /^[a-z]{1,3}\.[a-z]{3,}@northeastern\.edu$/;
                 const studentPattern = /^[a-z]{3,}\.[a-z]{1,3}@northeastern\.edu$/;
-                
                 return email.includes('northeastern.edu') && (staffPattern.test(email) || !studentPattern.test(email));
             });
-            
             const unique = {};
             staff.forEach(row => {
                 const email = (row['Buyer email'] || row['Email'] || '').trim().toLowerCase();
@@ -1090,22 +1033,17 @@
                     unique[email].events.push(row['Event']);
                 }
             });
-            
             currentModalData = Object.values(unique);
-            
             let html = '<table class="modal-table"><thead><tr><th>Name</th><th>Email</th><th>Events</th></tr></thead><tbody>';
-            
             currentModalData.forEach(p => {
                 html += `<tr><td>${p.name || 'N/A'}</td><td>${p.email}</td><td>${[...new Set(p.events)].join(', ')}</td></tr>`;
             });
-            
             return html + '</tbody></table>';
         }
 
         document.getElementById('modalSearch').addEventListener('input', function() {
             const term = this.value.toLowerCase();
             const rows = document.querySelectorAll('.modal-table tbody tr, .company-group');
-            
             rows.forEach(row => {
                 row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
             });
@@ -1113,17 +1051,11 @@
 
         function exportModalData() {
             let csv = '';
-            
             if (currentModalType === 'companies') {
                 csv = 'Company,Count,People\n';
                 currentModalData.forEach(item => {
                     const people = item.people.map(p => `${p.name} (${p.email})`).join('; ');
                     csv += `"${item.company}",${item.count},"${people}"\n`;
-                });
-            } else if (currentModalType === 'registrations') {
-                csv = 'Name,Email,Company,Event\n';
-                currentModalData.forEach(item => {
-                    csv += `"${item.name}","${item.email}","${item.company}","${item.event}"\n`;
                 });
             } else {
                 csv = 'Name,Email,Company/Method,Events\n';
@@ -1132,7 +1064,6 @@
                     csv += `"${item.name}","${item.email}","${item.company || item.method || 'N/A'}","${events}"\n`;
                 });
             }
-            
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -1147,22 +1078,16 @@
             data.forEach(row => {
                 const company = (row['Company'] || '').trim();
                 const lower = company.toLowerCase();
-                
                 if (!company || lower.includes('northeastern') || lower.includes('roux') || lower === 'student' || lower.includes('student')) return;
-                
                 counts[company] = (counts[company] || 0) + 1;
             });
-            
             const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10);
             const container = document.getElementById('companiesChart');
-            
             if (sorted.length === 0) {
                 container.innerHTML = '<div class="status-message">No external company data available</div>';
                 return;
             }
-            
             const max = Math.max(...sorted.map(i => i[1]));
-            
             container.innerHTML = sorted.map(([c, n]) => `
                 <div class="chart-item">
                     <div class="chart-label">${c}</div>
@@ -1175,38 +1100,28 @@
 
         function updateAttendeeTypeChart(data) {
             const personalEmails = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'me.com', 'aol.com', 'mail.com'];
-            
             const students = data.filter(row => {
                 const email = (row['Buyer email'] || row['Email'] || '').toLowerCase();
                 const company = (row['Company'] || '').toLowerCase();
                 const pattern = /^[a-z]{3,}\.[a-z]{1,3}@northeastern\.edu$/;
-                
                 if (pattern.test(email)) return true;
-                
                 const domain = email.includes('@') ? email.split('@')[1] : '';
                 return personalEmails.includes(domain) && (company === 'student' || company.includes('student') || company.includes('northeastern') || company.includes('roux'));
             }).length;
-            
             const staff = data.filter(row => {
                 const email = (row['Buyer email'] || row['Email'] || '').toLowerCase();
                 const staffPattern = /^[a-z]{1,3}\.[a-z]{3,}@northeastern\.edu$/;
                 const studentPattern = /^[a-z]{3,}\.[a-z]{1,3}@northeastern\.edu$/;
-                
                 return email.includes('northeastern.edu') && (staffPattern.test(email) || !studentPattern.test(email));
             }).length;
-            
             const govt = data.filter(row => {
                 const c = (row['Company'] || '').toLowerCase();
                 const e = (row['Buyer email'] || row['Email'] || '').toLowerCase();
                 return c.includes('town of') || c.includes('city of') || c.includes('county') || e.includes('.gov') || c.includes('government') || c.includes('municipal');
             }).length;
-            
             const other = data.length - students - staff - govt;
-            
             const ctx = document.getElementById('attendeeTypeChart');
-            
             if (attendeeTypeChart) attendeeTypeChart.destroy();
-            
             attendeeTypeChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
@@ -1230,12 +1145,9 @@
                 const event = row['Event'] || 'Unknown';
                 counts[event] = (counts[event] || 0) + 1;
             });
-            
             const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
             const ctx = document.getElementById('eventComparisonChart');
-            
             if (eventComparisonChart) eventComparisonChart.destroy();
-            
             eventComparisonChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
@@ -1251,10 +1163,7 @@
                     maintainAspectRatio: true,
                     plugins: { legend: { display: false } },
                     scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { stepSize: 1 }
-                        }
+                        y: { beginAtZero: true, ticks: { stepSize: 1 } }
                     }
                 }
             });
@@ -1263,15 +1172,12 @@
         function updateMultiDayChart(data) {
             const container = document.getElementById('multiDayContainer');
             const eventFilter = document.getElementById('eventFilter').value;
-            
             if (eventFilter === 'All' || !data.some(row => row['Which days do you plan to attend?'])) {
                 container.style.display = 'none';
                 return;
             }
-            
             container.style.display = 'block';
             document.getElementById('multiDayTitle').textContent = `Attendance by Event Day - ${eventFilter}`;
-            
             const counts = {};
             data.forEach(row => {
                 const days = row['Which days do you plan to attend?'];
@@ -1279,9 +1185,7 @@
                     counts[days.trim()] = (counts[days.trim()] || 0) + 1;
                 }
             });
-            
             const max = Math.max(...Object.values(counts), 1);
-            
             document.getElementById('multiDayChart').innerHTML = Object.entries(counts)
                 .sort((a, b) => b[1] - a[1])
                 .map(([day, count]) => `
@@ -1296,19 +1200,15 @@
 
         function renderTable(data) {
             const container = document.getElementById('tableContainer');
-            
             if (data.length === 0) {
                 container.innerHTML = '<div class="status-message">No data available</div>';
                 return;
             }
-            
             const hasAttended = data.some(row => row.hasOwnProperty('Attended'));
-            
             let html = '<table><thead><tr>';
             html += '<th>Name</th><th>Company</th><th>Email</th><th>Registration Date</th><th>Event</th>';
             if (hasAttended) html += '<th>Attended</th>';
             html += '<th>Days Attending</th></tr></thead><tbody>';
-            
             data.forEach(row => {
                 const name = `${row['First name'] || ''} ${row['Last name'] || ''}`.trim();
                 html += `<tr>
@@ -1321,12 +1221,10 @@
                     <td>${row['Which days do you plan to attend?'] || 'N/A'}</td>
                 </tr>`;
             });
-            
             container.innerHTML = html + '</tbody></table>';
         }
 
         document.getElementById('eventFilter').addEventListener('change', updateDashboard);
-        
         document.getElementById('searchInput').addEventListener('input', function(e) {
             const term = e.target.value.toLowerCase();
             const rows = document.querySelectorAll('#tableContainer tbody tr');
@@ -1334,11 +1232,8 @@
                 row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
             });
         });
-        
-        // Debug export - triple-click N logo
         let nClicks = 0;
         let nTimer = null;
-        
         document.getElementById('debugTrigger').addEventListener('click', function() {
             nClicks++;
             if (nClicks === 3) {
@@ -1349,31 +1244,24 @@
             if (nTimer) clearTimeout(nTimer);
             nTimer = setTimeout(() => nClicks = 0, 1000);
         });
-        
-        // Company debug - Shift + triple-click on companies card
         document.getElementById('companiesCard').addEventListener('click', function(e) {
             if (e.shiftKey && e.detail === 3) {
                 e.stopPropagation();
                 exportCompanyDebug();
             }
         });
-        
         function exportCategorization() {
             if (rawData.length === 0) return;
-            
             const personalEmails = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'me.com', 'aol.com', 'mail.com'];
             let csv = 'Name,Email,Company,Category,Detection Method\n';
-            
             rawData.forEach(row => {
                 const name = `${row['First name'] || ''} ${row['Last name'] || ''}`.trim();
                 const email = (row['Buyer email'] || row['Email'] || '').toLowerCase();
                 const company = (row['Company'] || '').trim();
                 const studentPattern = /^[a-z]{3,}\.[a-z]{1,3}@northeastern\.edu$/;
                 const staffPattern = /^[a-z]{1,3}\.[a-z]{3,}@northeastern\.edu$/;
-                
                 let cat = 'Other';
                 let method = '';
-                
                 if (studentPattern.test(email)) {
                     cat = 'Roux Student';
                     method = 'Student email pattern';
@@ -1383,7 +1271,6 @@
                 } else {
                     const domain = email.includes('@') ? email.split('@')[1] : '';
                     const lower = company.toLowerCase();
-                    
                     if (personalEmails.includes(domain) && (lower === 'student' || lower.includes('student') || lower.includes('northeastern') || lower.includes('roux'))) {
                         cat = 'Roux Student';
                         method = 'Personal email + Company';
@@ -1395,10 +1282,8 @@
                         method = 'Gov domain/company';
                     }
                 }
-                
                 csv += `"${name}","${email}","${company}","${cat}","${method}"\n`;
             });
-            
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -1407,13 +1292,10 @@
             a.click();
             URL.revokeObjectURL(url);
         }
-        
         function exportCompanyDebug() {
             if (rawData.length === 0) return;
-            
             const personalEmails = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'me.com', 'aol.com', 'mail.com'];
             const excluded = ['retired', 'independent', 'na', 'n/a', 'self', '?', 'none', 'student'];
-            
             const domains = {};
             rawData.forEach(row => {
                 const email = (row['Buyer email'] || row['Email'] || '').trim().toLowerCase();
@@ -1424,7 +1306,6 @@
                     }
                 }
             });
-            
             function normalize(name) {
                 if (!name) return null;
                 const clean = name.toLowerCase().replace(/\s+/g, '').replace(/[,\.]/g, '').replace(/\b(llc|inc|ltd|co|corp|corporation|company|group|the)\b/g, '').trim();
@@ -1434,18 +1315,14 @@
                 }
                 return name.toLowerCase();
             }
-            
             const companies = {};
-            
             rawData.forEach(row => {
                 const email = (row['Buyer email'] || row['Email'] || '').trim().toLowerCase();
                 const company = (row['Company'] || '').trim();
                 const lower = company.toLowerCase();
                 const name = `${row['First name'] || ''} ${row['Last name'] || ''}`.trim();
-                
                 let id = null;
                 let source = '';
-                
                 if (!email || !email.includes('@')) {
                     if (company && !excluded.includes(lower) && !lower.includes('northeastern') && !lower.includes('roux') && !lower.includes('student')) {
                         id = normalize(company);
@@ -1454,7 +1331,6 @@
                 } else {
                     const domain = email.split('@')[1];
                     if (domain === 'northeastern.edu') return;
-                    
                     if (personalEmails.includes(domain)) {
                         if (company && !excluded.includes(lower) && !lower.includes('northeastern') && !lower.includes('roux') && !lower.includes('student')) {
                             id = normalize(company);
@@ -1465,7 +1341,6 @@
                         source = 'Email domain';
                     }
                 }
-                
                 if (id) {
                     if (!companies[id]) {
                         companies[id] = { source: source, people: [] };
@@ -1477,15 +1352,12 @@
                     });
                 }
             });
-            
             let csv = 'Normalized Company/Domain,People Count,Source Type,Sample Persons,Original Company Names\n';
-            
             Object.entries(companies).sort((a, b) => b[1].people.length - a[1].people.length).forEach(([id, d]) => {
                 const sample = d.people.slice(0, 3).map(p => `${p.name} (${p.email})`).join('; ');
                 const originals = [...new Set(d.people.map(p => p.original).filter(c => c))].join('; ');
                 csv += `"${id}",${d.people.length},"${d.source}","${sample}","${originals}"\n`;
             });
-            
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -1493,7 +1365,6 @@
             a.download = 'unique-companies-debug.csv';
             a.click();
             URL.revokeObjectURL(url);
-            
             alert(`Exported ${Object.keys(companies).length} unique companies`);
         }
     </script>

@@ -119,6 +119,12 @@
             text-align: center;
             border: 2px solid #c41230;
             border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(196, 18, 48, 0.3);
         }
         .metric-value {
             font-size: 3em;
@@ -216,6 +222,151 @@
             font-weight: bold;
             transition: width 0.3s ease;
         }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 3% auto;
+            padding: 0;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 1200px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            animation: slideDown 0.3s;
+        }
+        
+        @keyframes slideDown {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .modal-header {
+            background-color: #c41230;
+            color: white;
+            padding: 20px 30px;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+        
+        .close {
+            color: white;
+            font-size: 35px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+        
+        .close:hover {
+            opacity: 0.8;
+        }
+        
+        .modal-body {
+            padding: 30px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        
+        .modal-search {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .modal-search input {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #c41230;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+        
+        .modal-export-btn {
+            background-color: #c41230;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .modal-export-btn:hover {
+            background-color: #a00f28;
+        }
+        
+        .modal-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .modal-table th {
+            background-color: #c41230;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+        
+        .modal-table td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .modal-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .modal-table tr:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .company-group {
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .company-group-header {
+            background-color: #f5f5f5;
+            padding: 15px;
+            font-weight: bold;
+            color: #333;
+            border-bottom: 2px solid #c41230;
+        }
+        
+        .company-group-body {
+            padding: 15px;
+        }
     </style>
 </head>
 <body>
@@ -232,6 +383,7 @@
             </div>
         </div>
     </div>
+
     <div class="upload-section">
         <h3><strong>Update Dashboard Data:</strong> Upload your event registration CSV or Excel file</h3>
         <div class="upload-controls">
@@ -245,32 +397,34 @@
             <option value="All">All Events</option>
         </select>
     </div>
+
     <div class="metrics">
-        <div class="metric-card">
+        <div class="metric-card" onclick="openModal('registrations')">
             <div class="metric-value" id="totalRegistrations">0</div>
             <div class="metric-label">Total Registrations</div>
         </div>
-        <div class="metric-card">
+        <div class="metric-card" onclick="openModal('attendees')">
             <div class="metric-value" id="totalAttendees">0</div>
             <div class="metric-label">Total Attendees</div>
         </div>
-        <div class="metric-card" id="companiesDebugTrigger" style="cursor: pointer;">
+        <div class="metric-card" id="companiesCard" onclick="openModal('companies')">
             <div class="metric-value" id="totalCompanies">0</div>
             <div class="metric-label">Unique Companies</div>
         </div>
-        <div class="metric-card">
+        <div class="metric-card" onclick="openModal('govt')">
             <div class="metric-value" id="totalGovt">0</div>
             <div class="metric-label">Gov't Institutions</div>
         </div>
-        <div class="metric-card">
+        <div class="metric-card" onclick="openModal('students')">
             <div class="metric-value" id="rouxStudents">0</div>
             <div class="metric-label">Roux Students</div>
         </div>
-        <div class="metric-card">
+        <div class="metric-card" onclick="openModal('staff')">
             <div class="metric-value" id="totalNortheastern">0</div>
             <div class="metric-label">Northeastern/Roux Staff</div>
         </div>
     </div>
+
     <div class="charts-section">
         <div class="chart-container">
             <div class="chart-title">Top 10 Companies by Registrations</div>
@@ -289,6 +443,7 @@
             <div id="multiDayChart"></div>
         </div>
     </div>
+
     <div class="table-section">
         <h2>Event Attendee Details</h2>
         <div style="margin-bottom: 20px;">
@@ -298,6 +453,24 @@
             <div class="status-message">Please upload a CSV file to view event data</div>
         </div>
     </div>
+
+    <!-- Modal -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Details</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="modal-search">
+                    <input type="text" id="modalSearch" placeholder="Search...">
+                    <button class="modal-export-btn" onclick="exportModalData()">Export to CSV</button>
+                </div>
+                <div id="modalContent"></div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
@@ -305,8 +478,9 @@
         let rawData = [];
         let attendeeTypeChart = null;
         let eventComparisonChart = null;
+        let currentModalData = [];
+        let currentModalType = '';
 
-        // Load data from localStorage on page load
         window.addEventListener('DOMContentLoaded', function() {
             const savedData = localStorage.getItem('rouxEventsData');
             if (savedData) {
@@ -330,18 +504,16 @@
                 alert('Please select a file first');
                 return;
             }
+            
             const reader = new FileReader();
             const fileName = file.name.toLowerCase();
             
             if (fileName.endsWith('.csv')) {
                 reader.onload = function(e) {
-                    const data = e.target.result;
-                    
-                    Papa.parse(data, {
+                    Papa.parse(e.target.result, {
                         header: true,
                         skipEmptyLines: true,
                         complete: function(results) {
-                            console.log('CSV data loaded:', results.data.length, 'rows');
                             rawData = results.data;
                             saveData();
                             processData();
@@ -351,28 +523,21 @@
                 reader.readAsText(file);
             } else if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
                 reader.onload = function(e) {
-                    const data = e.target.result;
-                    const workbook = XLSX.read(data, { type: 'binary' });
+                    const workbook = XLSX.read(e.target.result, { type: 'binary' });
                     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-                    console.log('Excel data loaded:', jsonData.length, 'rows');
-                    rawData = jsonData;
+                    rawData = XLSX.utils.sheet_to_json(firstSheet);
                     saveData();
                     processData();
                 };
                 reader.readAsBinaryString(file);
-            } else {
-                alert('Please upload a CSV or Excel file (.csv, .xlsx, .xls)');
             }
         }
 
         function saveData() {
             try {
                 localStorage.setItem('rouxEventsData', JSON.stringify(rawData));
-                console.log('Data saved to localStorage');
             } catch (e) {
                 console.error('Error saving data:', e);
-                alert('Warning: Data is too large to save automatically. It will be cleared on refresh.');
             }
         }
 
@@ -387,158 +552,35 @@
             
             eventFilter.innerHTML = '<option value="All">All Events</option>';
             events.forEach(event => {
-                const option = document.createElement('option');
-                option.value = event;
-                option.textContent = event;
-                eventFilter.appendChild(option);
+                eventFilter.appendChild(new Option(event, event));
             });
         }
 
-        function updateDashboard() {
+        function getFilteredData() {
             const eventFilter = document.getElementById('eventFilter').value;
-            
             let filtered = rawData.filter(row => row['Event']);
-            
             if (eventFilter !== 'All') {
                 filtered = filtered.filter(row => row['Event'] === eventFilter);
             }
+            return filtered;
+        }
+
+        function updateDashboard() {
+            const filtered = getFilteredData();
             
-            const totalReg = filtered.length;
+            // Total Registrations
+            document.getElementById('totalRegistrations').textContent = filtered.length;
             
-            // Calculate attendance with new logic
+            // Total Attendees (unique people who attended)
             const attendanceResult = calculateAttendance(filtered);
-            const totalAttendees = attendanceResult.count;
+            document.getElementById('totalAttendees').textContent = Math.round(attendanceResult.count);
             
-            // All other metrics count total registrations (not attendance)
-            const personalEmailDomains = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'me.com', 'aol.com', 'mail.com'];
-            const excludedCompanies = ['retired', 'independent', 'na', 'n/a', 'self', '?', 'none', 'student'];
-            
-            const domainToCompanyMap = {};
-            filtered.forEach(row => {
-                const email = (row['Buyer email'] || row['Email'] || '').trim().toLowerCase();
-                if (email && email.includes('@')) {
-                    const domain = email.split('@')[1];
-                    if (domain !== 'northeastern.edu' && !personalEmailDomains.includes(domain)) {
-                        domainToCompanyMap[domain] = domain;
-                    }
-                }
-            });
-            
-            function normalizeCompanyToDomain(companyName) {
-                if (!companyName) return null;
-                
-                let normalized = companyName.toLowerCase()
-                    .replace(/\s+/g, '')
-                    .replace(/[,\.]/g, '')
-                    .replace(/\b(llc|inc|ltd|co|corp|corporation|company|group|the)\b/g, '')
-                    .trim();
-                
-                for (let domain of Object.keys(domainToCompanyMap)) {
-                    const domainBase = domain.split('.')[0];
-                    if (normalized.includes(domainBase) || domainBase.includes(normalized)) {
-                        return domain;
-                    }
-                }
-                
-                return companyName.toLowerCase();
-            }
-            
-            const companyIdentifiers = filtered
-                .map(row => {
-                    const email = (row['Buyer email'] || row['Email'] || '').trim().toLowerCase();
-                    const company = (row['Company'] || '').trim();
-                    const companyLower = company.toLowerCase();
-                    
-                    if (!email || !email.includes('@')) {
-                        if (!company || 
-                            excludedCompanies.includes(companyLower) ||
-                            companyLower.includes('northeastern') ||
-                            companyLower.includes('roux') ||
-                            companyLower.includes('student')) {
-                            return null;
-                        }
-                        return normalizeCompanyToDomain(company);
-                    }
-                    
-                    const domain = email.split('@')[1];
-                    
-                    if (domain === 'northeastern.edu') return null;
-                    
-                    if (personalEmailDomains.includes(domain)) {
-                        if (!company || 
-                            excludedCompanies.includes(companyLower) ||
-                            companyLower.includes('northeastern') ||
-                            companyLower.includes('roux') ||
-                            companyLower.includes('student')) {
-                            return null;
-                        }
-                        return normalizeCompanyToDomain(company);
-                    }
-                    
-                    return domain;
-                })
-                .filter(c => c);
-            
-            const uniqueCompanies = [...new Set(companyIdentifiers)];
-            const totalCompaniesCount = uniqueCompanies.length;
-            
-            const govtCount = filtered.filter(row => {
-                const company = (row['Company'] || '').toLowerCase();
-                const email = (row['Buyer email'] || row['Email'] || '').toLowerCase();
-                return company.includes('town of') || 
-                       company.includes('city of') || 
-                       company.includes('county') ||
-                       email.includes('.gov') ||
-                       company.includes('government') ||
-                       company.includes('municipal');
-            }).length;
-            
-            const personalEmailDomains2 = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'me.com', 'aol.com', 'mail.com'];
-            
-            const rouxStudents = filtered.filter(row => {
-                const email = (row['Buyer email'] || row['Email'] || '').toLowerCase();
-                const company = (row['Company'] || '').toLowerCase();
-                
-                const studentPattern = /^[a-z]{3,}\.[a-z]{1,3}@northeastern\.edu$/;
-                if (studentPattern.test(email)) {
-                    return true;
-                }
-                
-                const domain = email.includes('@') ? email.split('@')[1] : '';
-                const isPersonalEmail = personalEmailDomains2.includes(domain);
-                
-                if (isPersonalEmail && (
-                    company === 'student' || 
-                    company === 'roux student' || 
-                    company === 'roux institute student' ||
-                    company.includes('student') ||
-                    company.includes('northeastern') ||
-                    company.includes('roux institute') ||
-                    company === 'nu' ||
-                    company === 'roux'
-                )) {
-                    return true;
-                }
-                
-                return false;
-            }).length;
-            
-            const northeasternCount = filtered.filter(row => {
-                const email = (row['Buyer email'] || row['Email'] || '').toLowerCase();
-                
-                const staffPattern = /^[a-z]{1,3}\.[a-z]{3,}@northeastern\.edu$/;
-                const studentPattern = /^[a-z]{3,}\.[a-z]{1,3}@northeastern\.edu$/;
-                
-                return email.includes('northeastern.edu') && 
-                       (staffPattern.test(email) || !studentPattern.test(email));
-            }).length;
-            
-            document.getElementById('totalRegistrations').textContent = totalReg;
-            document.getElementById('totalAttendees').textContent = Math.round(totalAttendees);
-            document.getElementById('totalCompanies').textContent = totalCompaniesCount;
-            document.getElementById('totalGovt').textContent = govtCount;
-            document.getElementById('rouxStudents').textContent = rouxStudents;
-            document.getElementById('totalNortheastern').textContent = northeasternCount;
+            // Companies, Students, Staff, Govt (based on registrations, not attendance)
+            const metrics = calculateMetrics(filtered);
+            document.getElementById('totalCompanies').textContent = metrics.companies;
+            document.getElementById('totalGovt').textContent = metrics.govt;
+            document.getElementById('rouxStudents').textContent = metrics.students;
+            document.getElementById('totalNortheastern').textContent = metrics.staff;
             
             updateCompaniesChart(filtered);
             updateAttendeeTypeChart(filtered);
@@ -548,93 +590,535 @@
         }
 
         function calculateAttendance(data) {
-            // Check if data has 'Attended' column
-            const hasAttendedColumn = data.some(row => row.hasOwnProperty('Attended'));
-            
-            let attendedEmails = new Set();
-            let hasEstimates = false;
-            let estimatedEvents = [];
-            
-            // Group by event to handle mixed scenarios
             const eventGroups = {};
             data.forEach(row => {
                 const event = row['Event'] || 'Unknown';
-                if (!eventGroups[event]) {
-                    eventGroups[event] = [];
-                }
+                if (!eventGroups[event]) eventGroups[event] = [];
                 eventGroups[event].push(row);
             });
             
-            // Process each event
-            Object.keys(eventGroups).forEach(eventName => {
-                const eventData = eventGroups[eventName];
-                
-                // Check if THIS event has attendance tracking
-                const eventHasAttendance = eventData.some(row => {
-                    const attended = row['Attended'];
-                    return attended && (attended.toString().toLowerCase() === 'yes' || attended.toString() === '1');
+            const attendedEmails = new Set();
+            
+            Object.values(eventGroups).forEach(eventData => {
+                const hasAttendance = eventData.some(row => {
+                    const val = row['Attended'];
+                    return val && (val.toString().toLowerCase() === 'yes' || val.toString() === '1');
                 });
                 
-                if (eventHasAttendance) {
-                    // Count actual attendance for this event
+                if (hasAttendance) {
                     eventData.forEach(row => {
-                        const attended = row['Attended'];
-                        if (attended && (attended.toString().toLowerCase() === 'yes' || attended.toString() === '1')) {
+                        const val = row['Attended'];
+                        if (val && (val.toString().toLowerCase() === 'yes' || val.toString() === '1')) {
+                            const email = (row['Buyer email'] || row['Email'] || '').trim().toLowerCase();
+                            if (email) attendedEmails.add(email);
+                        }
+                    });
+                } else {
+                    const emails = [...new Set(eventData.map(r => (r['Buyer email'] || r['Email'] || '').trim().toLowerCase()).filter(e => e))];
+                    const estimated = Math.round(emails.length * 0.8);
+                    emails.slice(0, estimated).forEach(e => attendedEmails.add(e));
+                }
+            });
+            
+            return { count: attendedEmails.size };
+        }
+
+        function calculateMetrics(data) {
+            const personalEmails = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'me.com', 'aol.com', 'mail.com'];
+            const excluded = ['retired', 'independent', 'na', 'n/a', 'self', '?', 'none', 'student'];
+            
+            // Build domain map
+            const domains = {};
+            data.forEach(row => {
+                const email = (row['Buyer email'] || row['Email'] || '').trim().toLowerCase();
+                if (email && email.includes('@')) {
+                    const domain = email.split('@')[1];
+                    if (domain !== 'northeastern.edu' && !personalEmails.includes(domain)) {
+                        domains[domain] = domain;
+                    }
+                }
+            });
+            
+            function normalize(name) {
+                if (!name) return null;
+                const clean = name.toLowerCase().replace(/\s+/g, '').replace(/[,\.]/g, '').replace(/\b(llc|inc|ltd|co|corp|corporation|company|group|the)\b/g, '').trim();
+                for (let d of Object.keys(domains)) {
+                    const base = d.split('.')[0];
+                    if (clean.includes(base) || base.includes(clean)) return d;
+                }
+                return name.toLowerCase();
+            }
+            
+            const companies = new Set();
+            data.forEach(row => {
+                const email = (row['Buyer email'] || row['Email'] || '').trim().toLowerCase();
+                const company = (row['Company'] || '').trim();
+                const companyLower = company.toLowerCase();
+                
+                let id = null;
+                
+                if (!email || !email.includes('@')) {
+                    if (company && !excluded.includes(companyLower) && !companyLower.includes('northeastern') && !companyLower.includes('roux') && !companyLower.includes('student')) {
+                        id = normalize(company);
+                    }
+                } else {
+                    const domain = email.split('@')[1];
+                    if (domain === 'northeastern.edu') return;
+                    
+                    if (personalEmails.includes(domain)) {
+                        if (company && !excluded.includes(companyLower) && !companyLower.includes('northeastern') && !companyLower.includes('roux') && !companyLower.includes('student')) {
+                            id = normalize(company);
+                        }
+                    } else {
+                        id = domain;
+                    }
+                }
+                
+                if (id) companies.add(id);
+            });
+            
+            const govt = data.filter(row => {
+                const c = (row['Company'] || '').toLowerCase();
+                const e = (row['Buyer email'] || row['Email'] || '').toLowerCase();
+                return c.includes('town of') || c.includes('city of') || c.includes('county') || e.includes('.gov') || c.includes('government') || c.includes('municipal');
+            }).length;
+            
+            const students = data.filter(row => {
+                const email = (row['Buyer email'] || row['Email'] || '').toLowerCase();
+                const company = (row['Company'] || '').toLowerCase();
+                const pattern = /^[a-z]{3,}\.[a-z]{1,3}@northeastern\.edu$/;
+                
+                if (pattern.test(email)) return true;
+                
+                const domain = email.includes('@') ? email.split('@')[1] : '';
+                const isPersonal = personalEmails.includes(domain);
+                
+                return isPersonal && (company === 'student' || company.includes('student') || company.includes('northeastern') || company.includes('roux'));
+            }).length;
+            
+            const staff = data.filter(row => {
+                const email = (row['Buyer email'] || row['Email'] || '').toLowerCase();
+                const staffPattern = /^[a-z]{1,3}\.[a-z]{3,}@northeastern\.edu$/;
+                const studentPattern = /^[a-z]{3,}\.[a-z]{1,3}@northeastern\.edu$/;
+                
+                return email.includes('northeastern.edu') && (staffPattern.test(email) || !studentPattern.test(email));
+            }).length;
+            
+            return {
+                companies: companies.size,
+                govt: govt,
+                students: students,
+                staff: staff
+            };
+        }
+
+        // Modal Functions
+        function openModal(type) {
+            if (rawData.length === 0) {
+                alert('Please upload data first');
+                return;
+            }
+            
+            currentModalType = type;
+            const modal = document.getElementById('detailModal');
+            const filtered = getFilteredData();
+            
+            let title = '';
+            let content = '';
+            
+            switch(type) {
+                case 'registrations':
+                    title = 'Total Registrations Details';
+                    content = generateRegistrationsModal(filtered);
+                    break;
+                case 'attendees':
+                    title = 'Total Attendees Details';
+                    content = generateAttendeesModal(filtered);
+                    break;
+                case 'companies':
+                    title = 'Unique Companies Details';
+                    content = generateCompaniesModal(filtered);
+                    break;
+                case 'govt':
+                    title = 'Government Institutions Details';
+                    content = generateGovtModal(filtered);
+                    break;
+                case 'students':
+                    title = 'Roux Students Details';
+                    content = generateStudentsModal(filtered);
+                    break;
+                case 'staff':
+                    title = 'Northeastern/Roux Staff Details';
+                    content = generateStaffModal(filtered);
+                    break;
+            }
+            
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalContent').innerHTML = content;
+            modal.style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('detailModal').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('detailModal')) {
+                closeModal();
+            }
+        }
+
+        function generateRegistrationsModal(data) {
+            const unique = {};
+            data.forEach(row => {
+                const email = (row['Buyer email'] || row['Email'] || '').trim().toLowerCase();
+                if (email) {
+                    if (!unique[email]) {
+                        unique[email] = {
+                            name: `${row['First name'] || ''} ${row['Last name'] || ''}`.trim(),
+                            email: email,
+                            company: row['Company'] || 'N/A',
+                            events: []
+                        };
+                    }
+                    unique[email].events.push(row['Event']);
+                }
+            });
+            
+            currentModalData = Object.values(unique);
+            
+            let html = '<table class="modal-table"><thead><tr><th>Name</th><th>Email</th><th>Company</th><th>Events</th></tr></thead><tbody>';
+            
+            currentModalData.forEach(p => {
+                html += `<tr><td>${p.name || 'N/A'}</td><td>${p.email}</td><td>${p.company}</td><td>${[...new Set(p.events)].join(', ')}</td></tr>`;
+            });
+            
+            return html + '</tbody></table>';
+        }
+
+        function generateAttendeesModal(data) {
+            const eventGroups = {};
+            data.forEach(row => {
+                const event = row['Event'] || 'Unknown';
+                if (!eventGroups[event]) eventGroups[event] = [];
+                eventGroups[event].push(row);
+            });
+            
+            const attendees = {};
+            
+            Object.entries(eventGroups).forEach(([eventName, eventData]) => {
+                const hasAttendance = eventData.some(row => {
+                    const val = row['Attended'];
+                    return val && (val.toString().toLowerCase() === 'yes' || val.toString() === '1');
+                });
+                
+                if (hasAttendance) {
+                    eventData.forEach(row => {
+                        const val = row['Attended'];
+                        if (val && (val.toString().toLowerCase() === 'yes' || val.toString() === '1')) {
                             const email = (row['Buyer email'] || row['Email'] || '').trim().toLowerCase();
                             if (email) {
-                                attendedEmails.add(email);
+                                if (!attendees[email]) {
+                                    attendees[email] = {
+                                        name: `${row['First name'] || ''} ${row['Last name'] || ''}`.trim(),
+                                        email: email,
+                                        company: row['Company'] || 'N/A',
+                                        events: []
+                                    };
+                                }
+                                attendees[email].events.push(eventName);
                             }
                         }
                     });
                 } else {
-                    // Estimate 80% attendance for this event
-                    hasEstimates = true;
-                    estimatedEvents.push(eventName);
-                    
-                    // Get unique registrants for this event
-                    const eventEmails = eventData.map(row => {
+                    const eventEmails = {};
+                    eventData.forEach(row => {
                         const email = (row['Buyer email'] || row['Email'] || '').trim().toLowerCase();
-                        return email;
-                    }).filter(e => e);
+                        if (email && !eventEmails[email]) {
+                            eventEmails[email] = {
+                                name: `${row['First name'] || ''} ${row['Last name'] || ''}`.trim(),
+                                company: row['Company'] || 'N/A'
+                            };
+                        }
+                    });
                     
-                    const uniqueEventEmails = [...new Set(eventEmails)];
-                    const estimatedAttendees = Math.round(uniqueEventEmails.length * 0.8);
+                    const emails = Object.keys(eventEmails);
+                    const estimated = Math.round(emails.length * 0.8);
                     
-                    // Add estimated attendees (we'll use a portion of the emails)
-                    const emailsToAdd = uniqueEventEmails.slice(0, estimatedAttendees);
-                    emailsToAdd.forEach(email => attendedEmails.add(email));
+                    emails.slice(0, estimated).forEach(email => {
+                        if (!attendees[email]) {
+                            attendees[email] = {
+                                name: eventEmails[email].name,
+                                email: email,
+                                company: eventEmails[email].company,
+                                events: []
+                            };
+                        }
+                        attendees[email].events.push(eventName + ' (est.)');
+                    });
                 }
             });
             
-            return {
-                count: attendedEmails.size,
-                hasEstimates: hasEstimates,
-                estimatedEvents: estimatedEvents
-            };
+            currentModalData = Object.values(attendees);
+            
+            let html = '<table class="modal-table"><thead><tr><th>Name</th><th>Email</th><th>Company</th><th>Events Attended</th></tr></thead><tbody>';
+            
+            currentModalData.forEach(p => {
+                html += `<tr><td>${p.name || 'N/A'}</td><td>${p.email}</td><td>${p.company}</td><td>${p.events.join(', ')}</td></tr>`;
+            });
+            
+            return html + '</tbody></table>';
         }
 
-        function updateCompaniesChart(data) {
-            const companyCounts = {};
+        function generateCompaniesModal(data) {
+            const personalEmails = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'me.com', 'aol.com', 'mail.com'];
+            const excluded = ['retired', 'independent', 'na', 'n/a', 'self', '?', 'none', 'student'];
+            
+            const domains = {};
             data.forEach(row => {
+                const email = (row['Buyer email'] || row['Email'] || '').trim().toLowerCase();
+                if (email && email.includes('@')) {
+                    const domain = email.split('@')[1];
+                    if (domain !== 'northeastern.edu' && !personalEmails.includes(domain)) {
+                        domains[domain] = domain;
+                    }
+                }
+            });
+            
+            function normalize(name) {
+                if (!name) return null;
+                const clean = name.toLowerCase().replace(/\s+/g, '').replace(/[,\.]/g, '').replace(/\b(llc|inc|ltd|co|corp|corporation|company|group|the)\b/g, '').trim();
+                for (let d of Object.keys(domains)) {
+                    const base = d.split('.')[0];
+                    if (clean.includes(base) || base.includes(clean)) return d;
+                }
+                return name.toLowerCase();
+            }
+            
+            const companies = {};
+            
+            data.forEach(row => {
+                const email = (row['Buyer email'] || row['Email'] || '').trim().toLowerCase();
                 const company = (row['Company'] || '').trim();
                 const companyLower = company.toLowerCase();
                 
-                if (!company || 
-                    companyLower.includes('northeastern') ||
-                    companyLower.includes('roux institute') ||
-                    companyLower.includes('roux') ||
-                    companyLower === 'student' ||
-                    companyLower.includes('student')) {
-                    return;
+                let id = null;
+                
+                if (!email || !email.includes('@')) {
+                    if (company && !excluded.includes(companyLower) && !companyLower.includes('northeastern') && !companyLower.includes('roux') && !companyLower.includes('student')) {
+                        id = normalize(company);
+                    }
+                } else {
+                    const domain = email.split('@')[1];
+                    if (domain === 'northeastern.edu') return;
+                    
+                    if (personalEmails.includes(domain)) {
+                        if (company && !excluded.includes(companyLower) && !companyLower.includes('northeastern') && !companyLower.includes('roux') && !companyLower.includes('student')) {
+                            id = normalize(company);
+                        }
+                    } else {
+                        id = domain;
+                    }
                 }
                 
-                companyCounts[company] = (companyCounts[company] || 0) + 1;
+                if (id) {
+                    if (!companies[id]) {
+                        companies[id] = {
+                            name: company || id,
+                            people: []
+                        };
+                    }
+                    
+                    const name = `${row['First name'] || ''} ${row['Last name'] || ''}`.trim();
+                    const personEmail = email || 'N/A';
+                    
+                    // Check for duplicates
+                    const exists = companies[id].people.some(p => p.email === personEmail);
+                    if (!exists) {
+                        companies[id].people.push({ name: name, email: personEmail });
+                    }
+                }
             });
             
-            const sorted = Object.entries(companyCounts)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 10);
+            currentModalData = Object.entries(companies).map(([id, d]) => ({
+                company: d.name,
+                count: d.people.length,
+                people: d.people
+            })).sort((a, b) => b.count - a.count);
             
+            let html = '';
+            currentModalData.forEach(c => {
+                html += `<div class="company-group">
+                    <div class="company-group-header">${c.company} (${c.count} ${c.count === 1 ? 'person' : 'people'})</div>
+                    <div class="company-group-body">
+                        <table class="modal-table"><thead><tr><th>Name</th><th>Email</th></tr></thead><tbody>`;
+                c.people.forEach(p => {
+                    html += `<tr><td>${p.name || 'N/A'}</td><td>${p.email}</td></tr>`;
+                });
+                html += `</tbody></table></div></div>`;
+            });
+            
+            return html;
+        }
+
+        function generateGovtModal(data) {
+            const govt = data.filter(row => {
+                const c = (row['Company'] || '').toLowerCase();
+                const e = (row['Buyer email'] || row['Email'] || '').toLowerCase();
+                return c.includes('town of') || c.includes('city of') || c.includes('county') || e.includes('.gov') || c.includes('government') || c.includes('municipal');
+            });
+            
+            const unique = {};
+            govt.forEach(row => {
+                const email = (row['Buyer email'] || row['Email'] || '').trim().toLowerCase();
+                if (email) {
+                    if (!unique[email]) {
+                        unique[email] = {
+                            name: `${row['First name'] || ''} ${row['Last name'] || ''}`.trim(),
+                            email: email,
+                            company: row['Company'] || 'N/A',
+                            events: []
+                        };
+                    }
+                    unique[email].events.push(row['Event']);
+                }
+            });
+            
+            currentModalData = Object.values(unique);
+            
+            let html = '<table class="modal-table"><thead><tr><th>Name</th><th>Email</th><th>Institution</th><th>Events</th></tr></thead><tbody>';
+            
+            currentModalData.forEach(p => {
+                html += `<tr><td>${p.name || 'N/A'}</td><td>${p.email}</td><td>${p.company}</td><td>${[...new Set(p.events)].join(', ')}</td></tr>`;
+            });
+            
+            return html + '</tbody></table>';
+        }
+
+        function generateStudentsModal(data) {
+            const personalEmails = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'me.com', 'aol.com', 'mail.com'];
+            
+            const students = data.filter(row => {
+                const email = (row['Buyer email'] || row['Email'] || '').toLowerCase();
+                const company = (row['Company'] || '').toLowerCase();
+                const pattern = /^[a-z]{3,}\.[a-z]{1,3}@northeastern\.edu$/;
+                
+                if (pattern.test(email)) return true;
+                
+                const domain = email.includes('@') ? email.split('@')[1] : '';
+                return personalEmails.includes(domain) && (company === 'student' || company.includes('student') || company.includes('northeastern') || company.includes('roux'));
+            });
+            
+            const unique = {};
+            students.forEach(row => {
+                const email = (row['Buyer email'] || row['Email'] || '').trim().toLowerCase();
+                if (email) {
+                    if (!unique[email]) {
+                        const pattern = /^[a-z]{3,}\.[a-z]{1,3}@northeastern\.edu$/;
+                        unique[email] = {
+                            name: `${row['First name'] || ''} ${row['Last name'] || ''}`.trim(),
+                            email: email,
+                            method: pattern.test(email) ? 'Student email pattern' : 'Personal email + Company',
+                            events: []
+                        };
+                    }
+                    unique[email].events.push(row['Event']);
+                }
+            });
+            
+            currentModalData = Object.values(unique);
+            
+            let html = '<table class="modal-table"><thead><tr><th>Name</th><th>Email</th><th>Detection Method</th><th>Events</th></tr></thead><tbody>';
+            
+            currentModalData.forEach(p => {
+                html += `<tr><td>${p.name || 'N/A'}</td><td>${p.email}</td><td>${p.method}</td><td>${[...new Set(p.events)].join(', ')}</td></tr>`;
+            });
+            
+            return html + '</tbody></table>';
+        }
+
+        function generateStaffModal(data) {
+            const staff = data.filter(row => {
+                const email = (row['Buyer email'] || row['Email'] || '').toLowerCase();
+                const staffPattern = /^[a-z]{1,3}\.[a-z]{3,}@northeastern\.edu$/;
+                const studentPattern = /^[a-z]{3,}\.[a-z]{1,3}@northeastern\.edu$/;
+                
+                return email.includes('northeastern.edu') && (staffPattern.test(email) || !studentPattern.test(email));
+            });
+            
+            const unique = {};
+            staff.forEach(row => {
+                const email = (row['Buyer email'] || row['Email'] || '').trim().toLowerCase();
+                if (email) {
+                    if (!unique[email]) {
+                        unique[email] = {
+                            name: `${row['First name'] || ''} ${row['Last name'] || ''}`.trim(),
+                            email: email,
+                            events: []
+                        };
+                    }
+                    unique[email].events.push(row['Event']);
+                }
+            });
+            
+            currentModalData = Object.values(unique);
+            
+            let html = '<table class="modal-table"><thead><tr><th>Name</th><th>Email</th><th>Events</th></tr></thead><tbody>';
+            
+            currentModalData.forEach(p => {
+                html += `<tr><td>${p.name || 'N/A'}</td><td>${p.email}</td><td>${[...new Set(p.events)].join(', ')}</td></tr>`;
+            });
+            
+            return html + '</tbody></table>';
+        }
+
+        document.getElementById('modalSearch').addEventListener('input', function() {
+            const term = this.value.toLowerCase();
+            const rows = document.querySelectorAll('.modal-table tbody tr, .company-group');
+            
+            rows.forEach(row => {
+                row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
+            });
+        });
+
+        function exportModalData() {
+            let csv = '';
+            
+            if (currentModalType === 'companies') {
+                csv = 'Company,Count,People\n';
+                currentModalData.forEach(item => {
+                    const people = item.people.map(p => `${p.name} (${p.email})`).join('; ');
+                    csv += `"${item.company}",${item.count},"${people}"\n`;
+                });
+            } else {
+                csv = 'Name,Email,Company/Method,Events\n';
+                currentModalData.forEach(item => {
+                    const events = [...new Set(item.events || [])].join('; ');
+                    csv += `"${item.name}","${item.email}","${item.company || item.method || 'N/A'}","${events}"\n`;
+                });
+            }
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${currentModalType}-details.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function updateCompaniesChart(data) {
+            const counts = {};
+            data.forEach(row => {
+                const company = (row['Company'] || '').trim();
+                const lower = company.toLowerCase();
+                
+                if (!company || lower.includes('northeastern') || lower.includes('roux') || lower === 'student' || lower.includes('student')) return;
+                
+                counts[company] = (counts[company] || 0) + 1;
+            });
+            
+            const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10);
             const container = document.getElementById('companiesChart');
             
             if (sorted.length === 0) {
@@ -642,145 +1126,99 @@
                 return;
             }
             
-            const maxCount = Math.max(...sorted.map(item => item[1]));
+            const max = Math.max(...sorted.map(i => i[1]));
             
-            container.innerHTML = sorted.map(([company, count]) => {
-                const width = (count / maxCount) * 100;
-                return `
-                    <div class="chart-item">
-                        <div class="chart-label">${company}</div>
-                        <div class="chart-bar-container">
-                            <div class="chart-bar" style="width: ${width}%">${count}</div>
-                        </div>
+            container.innerHTML = sorted.map(([c, n]) => `
+                <div class="chart-item">
+                    <div class="chart-label">${c}</div>
+                    <div class="chart-bar-container">
+                        <div class="chart-bar" style="width: ${(n/max)*100}%">${n}</div>
                     </div>
-                `;
-            }).join('');
+                </div>
+            `).join('');
         }
 
         function updateAttendeeTypeChart(data) {
-            const personalEmailDomainsChart = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'me.com', 'aol.com', 'mail.com'];
+            const personalEmails = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'me.com', 'aol.com', 'mail.com'];
             
-            const rouxStudentsChart = data.filter(row => {
+            const students = data.filter(row => {
                 const email = (row['Buyer email'] || row['Email'] || '').toLowerCase();
                 const company = (row['Company'] || '').toLowerCase();
+                const pattern = /^[a-z]{3,}\.[a-z]{1,3}@northeastern\.edu$/;
                 
-                const studentPattern = /^[a-z]{3,}\.[a-z]{1,3}@northeastern\.edu$/;
-                if (studentPattern.test(email)) {
-                    return true;
-                }
+                if (pattern.test(email)) return true;
                 
                 const domain = email.includes('@') ? email.split('@')[1] : '';
-                const isPersonalEmail = personalEmailDomainsChart.includes(domain);
-                
-                if (isPersonalEmail && (
-                    company === 'student' || 
-                    company === 'roux student' || 
-                    company === 'roux institute student' ||
-                    company.includes('student') ||
-                    company.includes('northeastern') ||
-                    company.includes('roux institute') ||
-                    company === 'nu' ||
-                    company === 'roux'
-                )) {
-                    return true;
-                }
-                
-                return false;
+                return personalEmails.includes(domain) && (company === 'student' || company.includes('student') || company.includes('northeastern') || company.includes('roux'));
             }).length;
             
-            const northeasternStaff = data.filter(row => {
+            const staff = data.filter(row => {
                 const email = (row['Buyer email'] || row['Email'] || '').toLowerCase();
-                
                 const staffPattern = /^[a-z]{1,3}\.[a-z]{3,}@northeastern\.edu$/;
                 const studentPattern = /^[a-z]{3,}\.[a-z]{1,3}@northeastern\.edu$/;
                 
-                return email.includes('northeastern.edu') && 
-                       (staffPattern.test(email) || !studentPattern.test(email));
+                return email.includes('northeastern.edu') && (staffPattern.test(email) || !studentPattern.test(email));
             }).length;
             
-            const govtCount = data.filter(row => {
-                const company = (row['Company'] || '').toLowerCase();
-                const email = (row['Buyer email'] || row['Email'] || '').toLowerCase();
-                return company.includes('town of') || 
-                       company.includes('city of') || 
-                       company.includes('county') ||
-                       email.includes('.gov') ||
-                       company.includes('government') ||
-                       company.includes('municipal');
+            const govt = data.filter(row => {
+                const c = (row['Company'] || '').toLowerCase();
+                const e = (row['Buyer email'] || row['Email'] || '').toLowerCase();
+                return c.includes('town of') || c.includes('city of') || c.includes('county') || e.includes('.gov') || c.includes('government') || c.includes('municipal');
             }).length;
             
-            const otherCount = data.length - rouxStudentsChart - northeasternStaff - govtCount;
+            const other = data.length - students - staff - govt;
             
             const ctx = document.getElementById('attendeeTypeChart');
             
-            if (attendeeTypeChart) {
-                attendeeTypeChart.destroy();
-            }
+            if (attendeeTypeChart) attendeeTypeChart.destroy();
             
             attendeeTypeChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: ['Roux Students', 'Northeastern/Roux Staff', 'Gov\'t Institutions', 'Other Companies'],
                     datasets: [{
-                        data: [rouxStudentsChart, northeasternStaff, govtCount, otherCount],
+                        data: [students, staff, govt, other],
                         backgroundColor: ['#c41230', '#f59e0b', '#4a90e2', '#95a5a6']
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: true,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
+                    plugins: { legend: { position: 'bottom' } }
                 }
             });
         }
 
         function updateEventComparisonChart(data) {
-            const eventCounts = {};
+            const counts = {};
             data.forEach(row => {
                 const event = row['Event'] || 'Unknown';
-                eventCounts[event] = (eventCounts[event] || 0) + 1;
+                counts[event] = (counts[event] || 0) + 1;
             });
             
-            const sortedEvents = Object.entries(eventCounts)
-                .sort((a, b) => b[1] - a[1]);
-            
-            const labels = sortedEvents.map(item => item[0]);
-            const counts = sortedEvents.map(item => item[1]);
-            
+            const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
             const ctx = document.getElementById('eventComparisonChart');
             
-            if (eventComparisonChart) {
-                eventComparisonChart.destroy();
-            }
+            if (eventComparisonChart) eventComparisonChart.destroy();
             
             eventComparisonChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: labels,
+                    labels: sorted.map(i => i[0]),
                     datasets: [{
                         label: 'Registrations',
-                        data: counts,
+                        data: sorted.map(i => i[1]),
                         backgroundColor: '#c41230'
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: true,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
+                    plugins: { legend: { display: false } },
                     scales: {
                         y: {
                             beginAtZero: true,
-                            ticks: {
-                                stepSize: 1
-                            }
+                            ticks: { stepSize: 1 }
                         }
                     }
                 }
@@ -791,335 +1229,237 @@
             const container = document.getElementById('multiDayContainer');
             const eventFilter = document.getElementById('eventFilter').value;
             
-            if (eventFilter === 'All') {
-                container.style.display = 'none';
-                return;
-            }
-            
-            const hasMultiDay = data.some(row => row['Which days do you plan to attend?']);
-            
-            if (!hasMultiDay) {
+            if (eventFilter === 'All' || !data.some(row => row['Which days do you plan to attend?'])) {
                 container.style.display = 'none';
                 return;
             }
             
             container.style.display = 'block';
+            document.getElementById('multiDayTitle').textContent = `Attendance by Event Day - ${eventFilter}`;
             
-            const eventName = eventFilter;
-            document.getElementById('multiDayTitle').textContent = `Attendance by Event Day - ${eventName}`;
-            
-            const dayCounts = {};
-            
+            const counts = {};
             data.forEach(row => {
                 const days = row['Which days do you plan to attend?'];
                 if (days && days.trim()) {
-                    const normalizedDays = days.trim();
-                    dayCounts[normalizedDays] = (dayCounts[normalizedDays] || 0) + 1;
+                    counts[days.trim()] = (counts[days.trim()] || 0) + 1;
                 }
             });
             
-            const chartContainer = document.getElementById('multiDayChart');
-            const maxCount = Math.max(...Object.values(dayCounts), 1);
+            const max = Math.max(...Object.values(counts), 1);
             
-            chartContainer.innerHTML = Object.entries(dayCounts)
+            document.getElementById('multiDayChart').innerHTML = Object.entries(counts)
                 .sort((a, b) => b[1] - a[1])
-                .map(([day, count]) => {
-                    const width = maxCount > 0 ? (count / maxCount) * 100 : 0;
-                    return `
-                        <div class="chart-item">
-                            <div class="chart-label">${day}</div>
-                            <div class="chart-bar-container">
-                                <div class="chart-bar" style="width: ${width}%">${count}</div>
-                            </div>
+                .map(([day, count]) => `
+                    <div class="chart-item">
+                        <div class="chart-label">${day}</div>
+                        <div class="chart-bar-container">
+                            <div class="chart-bar" style="width: ${(count/max)*100}%">${count}</div>
                         </div>
-                    `;
-                }).join('');
+                    </div>
+                `).join('');
         }
 
         function renderTable(data) {
             const container = document.getElementById('tableContainer');
             
             if (data.length === 0) {
-                container.innerHTML = '<div class="status-message">No data available for selected filters</div>';
+                container.innerHTML = '<div class="status-message">No data available</div>';
                 return;
             }
             
-            // Check if Attended column exists
-            const hasAttendedColumn = data.some(row => row.hasOwnProperty('Attended'));
+            const hasAttended = data.some(row => row.hasOwnProperty('Attended'));
             
-            let html = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Company</th>
-                            <th>Email</th>
-                            <th>Registration Date</th>
-                            <th>Event</th>
-                            ${hasAttendedColumn ? '<th>Attended</th>' : ''}
-                            <th>Days Attending</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
+            let html = '<table><thead><tr>';
+            html += '<th>Name</th><th>Company</th><th>Email</th><th>Registration Date</th><th>Event</th>';
+            if (hasAttended) html += '<th>Attended</th>';
+            html += '<th>Days Attending</th></tr></thead><tbody>';
             
             data.forEach(row => {
                 const name = `${row['First name'] || ''} ${row['Last name'] || ''}`.trim();
-                const email = row['Buyer email'] || row['Email'] || 'N/A';
-                const regDate = row['Order date & time'] || row['Registration Date'] || 'N/A';
-                const daysAttending = row['Which days do you plan to attend?'] || 'N/A';
-                const attended = row['Attended'] || 'N/A';
-                
-                html += `
-                    <tr>
-                        <td>${name || 'N/A'}</td>
-                        <td>${row['Company'] || 'N/A'}</td>
-                        <td>${email}</td>
-                        <td>${regDate}</td>
-                        <td>${row['Event'] || 'N/A'}</td>
-                        ${hasAttendedColumn ? `<td>${attended}</td>` : ''}
-                        <td>${daysAttending}</td>
-                    </tr>
-                `;
+                html += `<tr>
+                    <td>${name || 'N/A'}</td>
+                    <td>${row['Company'] || 'N/A'}</td>
+                    <td>${row['Buyer email'] || row['Email'] || 'N/A'}</td>
+                    <td>${row['Order date & time'] || row['Registration Date'] || 'N/A'}</td>
+                    <td>${row['Event'] || 'N/A'}</td>
+                    ${hasAttended ? `<td>${row['Attended'] || 'N/A'}</td>` : ''}
+                    <td>${row['Which days do you plan to attend?'] || 'N/A'}</td>
+                </tr>`;
             });
             
-            html += '</tbody></table>';
-            container.innerHTML = html;
+            container.innerHTML = html + '</tbody></table>';
         }
 
         document.getElementById('eventFilter').addEventListener('change', updateDashboard);
         
         document.getElementById('searchInput').addEventListener('input', function(e) {
-            const searchTerm = e.target.value.toLowerCase();
-            const table = document.querySelector('#tableContainer table');
-            
-            if (!table) return;
-            
-            const rows = table.querySelectorAll('tbody tr');
+            const term = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('#tableContainer tbody tr');
             rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.includes(searchTerm) ? '' : 'none';
+                row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
             });
         });
         
-        let clickCount = 0;
-        let clickTimer = null;
+        // Debug export - triple-click N logo
+        let nClicks = 0;
+        let nTimer = null;
         
         document.getElementById('debugTrigger').addEventListener('click', function() {
-            clickCount++;
-            
-            if (clickCount === 3) {
+            nClicks++;
+            if (nClicks === 3) {
                 exportCategorization();
-                clickCount = 0;
-                clearTimeout(clickTimer);
+                nClicks = 0;
+                clearTimeout(nTimer);
             }
-            
-            if (clickTimer) clearTimeout(clickTimer);
-            clickTimer = setTimeout(() => {
-                clickCount = 0;
-            }, 1000);
+            if (nTimer) clearTimeout(nTimer);
+            nTimer = setTimeout(() => nClicks = 0, 1000);
         });
         
-        let companyClickCount = 0;
-        let companyClickTimer = null;
-        
-        document.getElementById('companiesDebugTrigger').addEventListener('click', function() {
-            companyClickCount++;
-            
-            if (companyClickCount === 3) {
+        // Company debug - triple-click while holding Shift on companies card
+        document.getElementById('companiesCard').addEventListener('click', function(e) {
+            if (e.shiftKey && e.detail === 3) {
+                e.stopPropagation();
                 exportCompanyDebug();
-                companyClickCount = 0;
-                clearTimeout(companyClickTimer);
             }
-            
-            if (companyClickTimer) clearTimeout(companyClickTimer);
-            companyClickTimer = setTimeout(() => {
-                companyClickCount = 0;
-            }, 1000);
         });
         
         function exportCategorization() {
-            if (rawData.length === 0) {
-                alert('Please load data first');
-                return;
-            }
+            if (rawData.length === 0) return;
             
-            const personalEmailDomains = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'me.com', 'aol.com', 'mail.com'];
-            
-            let csvContent = 'Name,Email,Company,Category,Detection Method\n';
+            const personalEmails = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'me.com', 'aol.com', 'mail.com'];
+            let csv = 'Name,Email,Company,Category,Detection Method\n';
             
             rawData.forEach(row => {
                 const name = `${row['First name'] || ''} ${row['Last name'] || ''}`.trim();
                 const email = (row['Buyer email'] || row['Email'] || '').toLowerCase();
                 const company = (row['Company'] || '').trim();
-                
                 const studentPattern = /^[a-z]{3,}\.[a-z]{1,3}@northeastern\.edu$/;
                 const staffPattern = /^[a-z]{1,3}\.[a-z]{3,}@northeastern\.edu$/;
                 
-                let category = 'Other';
+                let cat = 'Other';
                 let method = '';
                 
                 if (studentPattern.test(email)) {
-                    category = 'Roux Student';
-                    method = 'Student email pattern (lastname.initial@)';
+                    cat = 'Roux Student';
+                    method = 'Student email pattern';
                 } else if (staffPattern.test(email)) {
-                    category = 'Northeastern/Roux Staff';
-                    method = 'Staff email pattern (initial.lastname@)';
+                    cat = 'Northeastern/Roux Staff';
+                    method = 'Staff email pattern';
                 } else {
                     const domain = email.includes('@') ? email.split('@')[1] : '';
-                    const isPersonalEmail = personalEmailDomains.includes(domain);
-                    const companyLower = company.toLowerCase();
+                    const lower = company.toLowerCase();
                     
-                    if (isPersonalEmail && (
-                        companyLower === 'student' || 
-                        companyLower === 'roux student' || 
-                        companyLower === 'roux institute student' ||
-                        companyLower.includes('student') ||
-                        companyLower.includes('northeastern') ||
-                        companyLower.includes('roux institute') ||
-                        companyLower === 'nu' ||
-                        companyLower === 'roux'
-                    )) {
-                        category = 'Roux Student';
-                        method = 'Personal email + Northeastern/Roux company';
+                    if (personalEmails.includes(domain) && (lower === 'student' || lower.includes('student') || lower.includes('northeastern') || lower.includes('roux'))) {
+                        cat = 'Roux Student';
+                        method = 'Personal email + Company';
                     } else if (email.includes('northeastern.edu')) {
-                        category = 'Northeastern/Roux Staff';
-                        method = 'Northeastern.edu email (other pattern)';
-                    } else if (companyLower.includes('town of') || 
-                               companyLower.includes('city of') || 
-                               email.includes('.gov')) {
-                        category = 'Government';
-                        method = 'Gov domain or company';
+                        cat = 'Northeastern/Roux Staff';
+                        method = 'Northeastern email (other)';
+                    } else if (lower.includes('town of') || lower.includes('city of') || email.includes('.gov')) {
+                        cat = 'Government';
+                        method = 'Gov domain/company';
                     }
                 }
                 
-                csvContent += `"${name}","${email}","${company}","${category}","${method}"\n`;
+                csv += `"${name}","${email}","${company}","${cat}","${method}"\n`;
             });
             
-            const blob = new Blob([csvContent], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
             a.download = 'attendee-categorization-debug.csv';
             a.click();
-            window.URL.revokeObjectURL(url);
-            
-            alert('Debug export downloaded! Check "attendee-categorization-debug.csv" to verify student/staff detection.');
+            URL.revokeObjectURL(url);
         }
         
         function exportCompanyDebug() {
-            if (rawData.length === 0) {
-                alert('Please load data first');
-                return;
-            }
+            if (rawData.length === 0) return;
             
-            const personalEmailDomains = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'me.com', 'aol.com', 'mail.com'];
-            const excludedCompanies = ['retired', 'independent', 'na', 'n/a', 'self', '?', 'none', 'student'];
+            const personalEmails = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'me.com', 'aol.com', 'mail.com'];
+            const excluded = ['retired', 'independent', 'na', 'n/a', 'self', '?', 'none', 'student'];
             
-            const domainToCompanyMap = {};
+            const domains = {};
             rawData.forEach(row => {
                 const email = (row['Buyer email'] || row['Email'] || '').trim().toLowerCase();
                 if (email && email.includes('@')) {
                     const domain = email.split('@')[1];
-                    if (domain !== 'northeastern.edu' && !personalEmailDomains.includes(domain)) {
-                        domainToCompanyMap[domain] = domain;
+                    if (domain !== 'northeastern.edu' && !personalEmails.includes(domain)) {
+                        domains[domain] = domain;
                     }
                 }
             });
             
-            function normalizeCompanyToDomain(companyName) {
-                if (!companyName) return null;
-                
-                let normalized = companyName.toLowerCase()
-                    .replace(/\s+/g, '')
-                    .replace(/[,\.]/g, '')
-                    .replace(/\b(llc|inc|ltd|co|corp|corporation|company|group|the)\b/g, '')
-                    .trim();
-                
-                for (let domain of Object.keys(domainToCompanyMap)) {
-                    const domainBase = domain.split('.')[0];
-                    if (normalized.includes(domainBase) || domainBase.includes(normalized)) {
-                        return domain;
-                    }
+            function normalize(name) {
+                if (!name) return null;
+                const clean = name.toLowerCase().replace(/\s+/g, '').replace(/[,\.]/g, '').replace(/\b(llc|inc|ltd|co|corp|corporation|company|group|the)\b/g, '').trim();
+                for (let d of Object.keys(domains)) {
+                    const base = d.split('.')[0];
+                    if (clean.includes(base) || base.includes(clean)) return d;
                 }
-                
-                return companyName.toLowerCase();
+                return name.toLowerCase();
             }
             
-            const companyPeople = {};
+            const companies = {};
             
             rawData.forEach(row => {
                 const email = (row['Buyer email'] || row['Email'] || '').trim().toLowerCase();
                 const company = (row['Company'] || '').trim();
-                const companyLower = company.toLowerCase();
+                const lower = company.toLowerCase();
                 const name = `${row['First name'] || ''} ${row['Last name'] || ''}`.trim();
                 
-                let companyIdentifier = null;
-                let sourceType = '';
+                let id = null;
+                let source = '';
                 
                 if (!email || !email.includes('@')) {
-                    if (company && 
-                        !excludedCompanies.includes(companyLower) &&
-                        !companyLower.includes('northeastern') &&
-                        !companyLower.includes('roux') &&
-                        !companyLower.includes('student')) {
-                        companyIdentifier = normalizeCompanyToDomain(company);
-                        sourceType = 'Company field (no email) - normalized';
+                    if (company && !excluded.includes(lower) && !lower.includes('northeastern') && !lower.includes('roux') && !lower.includes('student')) {
+                        id = normalize(company);
+                        source = 'Company (no email) - normalized';
                     }
                 } else {
                     const domain = email.split('@')[1];
-                    
                     if (domain === 'northeastern.edu') return;
                     
-                    if (personalEmailDomains.includes(domain)) {
-                        if (company && 
-                            !excludedCompanies.includes(companyLower) &&
-                            !companyLower.includes('northeastern') &&
-                            !companyLower.includes('roux') &&
-                            !companyLower.includes('student')) {
-                            companyIdentifier = normalizeCompanyToDomain(company);
-                            sourceType = 'Company field (personal email) - normalized';
+                    if (personalEmails.includes(domain)) {
+                        if (company && !excluded.includes(lower) && !lower.includes('northeastern') && !lower.includes('roux') && !lower.includes('student')) {
+                            id = normalize(company);
+                            source = 'Company (personal email) - normalized';
                         }
                     } else {
-                        companyIdentifier = domain;
-                        sourceType = 'Email domain';
+                        id = domain;
+                        source = 'Email domain';
                     }
                 }
                 
-                if (companyIdentifier) {
-                    if (!companyPeople[companyIdentifier]) {
-                        companyPeople[companyIdentifier] = {
-                            source: sourceType,
-                            people: []
-                        };
+                if (id) {
+                    if (!companies[id]) {
+                        companies[id] = { source: source, people: [] };
                     }
-                    companyPeople[companyIdentifier].people.push({
+                    companies[id].people.push({
                         name: name || 'N/A',
                         email: email || 'N/A',
-                        originalCompany: company
+                        original: company
                     });
                 }
             });
             
-            let csvContent = 'Normalized Company/Domain,People Count,Source Type,Sample Person(s),Original Company Names\n';
+            let csv = 'Normalized Company/Domain,People Count,Source Type,Sample Persons,Original Company Names\n';
             
-            Object.entries(companyPeople)
-                .sort((a, b) => b[1].people.length - a[1].people.length)
-                .forEach(([company, data]) => {
-                    const samplePeople = data.people.slice(0, 3).map(p => `${p.name} (${p.email})`).join('; ');
-                    const originalNames = [...new Set(data.people.map(p => p.originalCompany).filter(c => c))].join('; ');
-                    csvContent += `"${company}",${data.people.length},"${data.source}","${samplePeople}","${originalNames}"\n`;
-                });
+            Object.entries(companies).sort((a, b) => b[1].people.length - a[1].people.length).forEach(([id, d]) => {
+                const sample = d.people.slice(0, 3).map(p => `${p.name} (${p.email})`).join('; ');
+                const originals = [...new Set(d.people.map(p => p.original).filter(c => c))].join('; ');
+                csv += `"${id}",${d.people.length},"${d.source}","${sample}","${originals}"\n`;
+            });
             
-            const blob = new Blob([csvContent], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
             a.download = 'unique-companies-debug.csv';
             a.click();
-            window.URL.revokeObjectURL(url);
+            URL.revokeObjectURL(url);
             
-            alert(`Unique companies debug exported!\n\nTotal unique companies: ${Object.keys(companyPeople).length}\n\nEach row represents ONE unique company (normalized).\nPeople Count shows how many people from that company registered.\nOriginal Company Names shows all variations found.\n\nCheck "unique-companies-debug.csv" for details.`);
+            alert(`Exported ${Object.keys(companies).length} unique companies`);
         }
     </script>
 </body>

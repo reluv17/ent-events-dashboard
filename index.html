@@ -320,6 +320,18 @@
         .modal-export-btn:hover {
             background-color: #a00f28;
         }
+        .modal-debug-btn {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .modal-debug-btn:hover {
+            background-color: #5a6268;
+        }
         .modal-table {
             width: 100%;
             border-collapse: collapse;
@@ -478,6 +490,7 @@
                 <div class="modal-search">
                     <input type="text" id="modalSearch" placeholder="Search...">
                     <button class="modal-export-btn" onclick="exportModalData()">Export to CSV</button>
+                    <button class="modal-debug-btn" id="debugBtn" onclick="exportCompanyDebug()" style="display: none;">Debug Export</button>
                 </div>
                 <div id="modalContent"></div>
             </div>
@@ -743,6 +756,11 @@
             currentModalType = type;
             const modal = document.getElementById('detailModal');
             const filtered = getFilteredData();
+            
+            // Show/hide debug button only for companies modal
+            const debugBtn = document.getElementById('debugBtn');
+            debugBtn.style.display = (type === 'companies') ? 'block' : 'none';
+            
             let title = '';
             let content = '';
             switch(type) {
@@ -1232,8 +1250,10 @@
                 row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
             });
         });
+        
         let nClicks = 0;
         let nTimer = null;
+        
         document.getElementById('debugTrigger').addEventListener('click', function() {
             nClicks++;
             if (nClicks === 3) {
@@ -1244,12 +1264,7 @@
             if (nTimer) clearTimeout(nTimer);
             nTimer = setTimeout(() => nClicks = 0, 1000);
         });
-        document.getElementById('companiesCard').addEventListener('click', function(e) {
-            if (e.shiftKey && e.detail === 3) {
-                e.stopPropagation();
-                exportCompanyDebug();
-            }
-        });
+        
         function exportCategorization() {
             if (rawData.length === 0) return;
             const personalEmails = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'me.com', 'aol.com', 'mail.com'];
@@ -1291,7 +1306,9 @@
             a.download = 'attendee-categorization-debug.csv';
             a.click();
             URL.revokeObjectURL(url);
+            alert('Categorization debug exported!');
         }
+        
         function exportCompanyDebug() {
             if (rawData.length === 0) return;
             const personalEmails = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'me.com', 'aol.com', 'mail.com'];
@@ -1365,7 +1382,7 @@
             a.download = 'unique-companies-debug.csv';
             a.click();
             URL.revokeObjectURL(url);
-            alert(`Exported ${Object.keys(companies).length} unique companies`);
+            alert(`Exported ${Object.keys(companies).length} unique companies with normalization details!`);
         }
     </script>
 </body>

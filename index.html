@@ -575,21 +575,6 @@
         let currentModalData = [];
         let currentModalType = '';
 
-        function seededRandom(seed) {
-    const x = Math.sin(seed) * 10000;
-    return x - Math.floor(x);
-}
-
-function getEventAttendanceRate(eventName) {
-    let hash = 0;
-    for (let i = 0; i < eventName.length; i++) {
-        hash = ((hash << 5) - hash) + eventName.charCodeAt(i);
-        hash = hash & hash;
-    }
-    const random = seededRandom(Math.abs(hash));
-    return 0.75 + (random * 0.10); // 75-85% range
-}
-  
         window.addEventListener('DOMContentLoaded', function() {
             const savedData = localStorage.getItem('rouxEventsData');
             if (savedData) {
@@ -795,7 +780,7 @@ function getEventAttendanceRate(eventName) {
                         return (r['Buyer email'] || r['Email'] || '').trim().toLowerCase();
                     }).filter(e => e))];
                     // Random estimation between 75-85%
-                    const randomRate = getEventAttendanceRate(eventName);
+                    const randomRate = 0.75 + (Math.random() * 0.10);
                     const estimated = Math.round(emails.length * randomRate);
                     emails.slice(0, estimated).forEach(e => attendedEmails.add(e));
                 }

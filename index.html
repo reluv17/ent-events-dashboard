@@ -575,22 +575,6 @@
         let currentModalData = [];
         let currentModalType = '';
 
-        // Seeded random function for consistent attendance rates
-        function seededRandom(seed) {
-            const x = Math.sin(seed) * 10000;
-            return x - Math.floor(x);
-        }
-        
-        function getEventAttendanceRate(eventName) {
-            let hash = 0;
-            for (let i = 0; i < eventName.length; i++) {
-                hash = ((hash << 5) - hash) + eventName.charCodeAt(i);
-                hash = hash & hash;
-            }
-            const random = seededRandom(Math.abs(hash));
-            return 0.75 + (random * 0.10); // 75-85% range
-        }
-
         window.addEventListener('DOMContentLoaded', function() {
             const savedData = localStorage.getItem('rouxEventsData');
             if (savedData) {
@@ -777,7 +761,7 @@
             
             const attendedEmails = new Set();
             
-            Object.entries(eventGroups).forEach(([eventName, eventData]) => {
+            Object.values(eventGroups).forEach(eventData => {
                 const hasAttendance = eventData.some(row => {
                     const val = row['Attended'];
                     return val && (val.toString().toLowerCase() === 'yes' || val.toString() === '1');
@@ -795,8 +779,8 @@
                     const emails = [...new Set(eventData.map(r => {
                         return (r['Buyer email'] || r['Email'] || '').trim().toLowerCase();
                     }).filter(e => e))];
-                    // Use seeded random based on event name (75-85%)
-                    const randomRate = getEventAttendanceRate(eventName);
+                    // Random estimation between 75-85%
+                    const randomRate = 0.75 + (Math.random() * 0.10);
                     const estimated = Math.round(emails.length * randomRate);
                     emails.slice(0, estimated).forEach(e => attendedEmails.add(e));
                 }
@@ -1016,7 +1000,7 @@
                     });
                     
                     const emails = Object.keys(eventEmails);
-                    const randomRate = getEventAttendanceRate(eventName);
+                    const randomRate = 0.75 + (Math.random() * 0.10);
                     const estimated = Math.round(emails.length * randomRate);
                     
                     emails.slice(0, estimated).forEach(email => {
@@ -1683,4 +1667,19 @@
                 .forEach(([id, d]) => {
                     const sample = d.people.slice(0, 3).map(p => `${p.name} (${p.email})`).join('; ');
                     const originals = [...new Set(d.people.map(p => p.original).filter(c => c))].join('; ');
-                    csvContent += `"${d.displayName}",${d.people.length},"${sample}","${originals}
+                    csvContent += `"${d.displayName}",${d.people.length},"${sample}","${originals}"\n`;
+                });
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'unique-companies-debug.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            alert(`Exported ${Object.keys(companies).length} unique companies (Company field only)!`);
+        }
+    </script>
+</body>
+</html>
